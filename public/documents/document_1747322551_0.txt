@@ -1,0 +1,281 @@
+limescreen
+
+web.php
+
+use App\Http\Controllers\HomeController;
+
+Route::get('/creative-minds', [HomeController::class, 'getCreativeMinds'])->name('creative.minds');
+
+
+HomeController.php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\ModelProfile; // Assuming you have a model for profiles
+
+class HomeController extends Controller
+{
+    public function getCreativeMinds()
+    {
+        $models = ModelProfile::all(); // Fetch models data from DB
+	$models = ModelProfile::select('file','fname','lname','actor_type')->pagination(10);
+
+        return response()->json([
+            'html' => view('partials.creative_minds', compact('models'))->render()
+        ]);
+    }
+}
+
+
+
+resources/views/partials/creative_minds.blade.php
+
+<div class="creative-minds-section">
+    <h2 class="section-title">CREATIVE MINDS</h2>
+    <div class="models-list">
+        @foreach($models as $model)
+            <div class="model-card">
+                <img src="{{ asset($model->image_path) }}" alt="{{ $model->name }}">
+                <div class="model-info">
+                    <h3>{{ strtoupper($model->name) }}</h3>
+                    <p>Model</p>
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
+
+
+home.blade.php
+
+<div id="creativeMindsContainer"></div>
+
+<script>
+$(document).ready(function() {
+    // When clicking on Home page link
+    // $('#homeLink').on('click', function() {
+        $.ajax({
+            url: "{{ route('creative.minds') }}",
+            type: "GET",
+            success: function(response) {
+                $('#creativeMindsContainer').html(response.html);
+            },
+            error: function() {
+                console.error('Failed to load Creative Minds section.');
+            }
+        });
+   // });
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+pitambaranet
+
+Category.php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Category extends Model
+{
+    use HasFactory;
+    protected $fillable = ['name'];
+
+    public function images()
+    {
+        return $this->hasMany(Image::class);
+    }
+}
+
+
+Image.php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Image extends Model
+{
+    use HasFactory;
+    protected $fillable = ['category_id', 'image_path'];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+}
+
+
+GalleryController.php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Category;
+use App\Models\Image;
+
+class GalleryController extends Controller
+{
+    public function index(Request $request)
+    {
+        $categories = Category::all();
+        $categoryId = $request->input('category_id', $categories->first()->id ?? null);
+        
+        $images = Image::where('category_id', $categoryId)
+                       ->paginate(6); // Change per page count as needed
+
+        return view('gallery', compact('categories', 'images', 'categoryId'));
+    }
+}
+
+
+web.php
+
+use App\Http\Controllers\GalleryController;
+
+Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
+
+
+gallery.blade.php
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .active { background-color: white; color: black; }
+        .category-button { margin: 5px; padding: 10px; border: 1px solid white; cursor: pointer; }
+        .gallery-container { display: flex; flex-wrap: wrap; gap: 10px; }
+        .gallery-item { width: 30%; }
+        img { width: 100%; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div>
+        @foreach ($categories as $category)
+            <button class="category-button {{ $categoryId == $category->id ? 'active' : '' }}" 
+                data-category="{{ $category->id }}">{{ $category->name }}
+            </button>
+        @endforeach
+    </div>
+
+    <div class="gallery-container" id="gallery">
+        @foreach ($images as $image)
+            <div class="gallery-item">
+                <img src="{{ asset($image->image_path) }}" alt="Image">
+            </div>
+        @endforeach
+    </div>
+
+    <div id="pagination">
+        {{ $images->links() }}
+    </div>
+
+    <script>
+        $(document).on('click', '.category-button', function() {
+            let categoryId = $(this).data('category');
+            $('.category-button').removeClass('active');
+            $(this).addClass('active');
+
+            $.ajax({
+                url: '{{ route("gallery.index") }}',
+                type: 'GET',
+                data: { category_id: categoryId },
+                success: function(response) {
+                    let newHtml = $(response).find('#gallery').html();
+                    let newPagination = $(response).find('#pagination').html();
+                    $('#gallery').html(newHtml);
+                    $('#pagination').html(newPagination);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
+
+
+
+
+2nd prompt response
+---------------------------------------------
+
+GalleryController.php
+
+public function index(Request $request)
+{
+    $categories = Category::all();
+    $categoryId = $request->input('category_id', $categories->first()->id ?? null);
+    
+    $images = Image::where('category_id', $categoryId)->paginate(9);
+
+    if ($request->ajax()) {
+        return response()->json([
+            'html' => view('partials.images', compact('images'))->render(),
+            'pagination' => (string) $images->links()
+        ]);
+    }
+
+    return view('gallery', compact('categories', 'images', 'categoryId'));
+}
+
+
+resources/views/partials/images.blade.php
+
+@foreach ($images as $image)
+    <div class="magnific-img active" data-image="{{ $image->category->name }}">
+        <a class="image-popup-vertical-fit" href="{{ asset($image->image_path) }}" title="Image">
+            <img src="{{ asset($image->image_path) }}" alt="Image">
+            <i class="fa fa-search-plus" aria-hidden="true"></i>
+        </a>
+    </div>
+@endforeach
+
+
+gallery.blade.php
+
+<div class="magnific-images" id="imageContainer">
+    @include('partials.images', ['images' => $images])
+</div>
+
+<div id="pagination">
+    {{ $images->links() }}
+</div>
+
+<script>
+    $(document).on('click', '.tab-item', function() {
+        let categoryId = $(this).data('category-id');
+        $('.tab-item').removeClass('active');
+        $(this).addClass('active');
+
+        $.ajax({
+            url: '{{ route("gallery.index") }}',
+            type: 'GET',
+            data: { category_id: categoryId },
+            success: function(response) {
+                $('#imageContainer').html(response.html);
+                $('#pagination').html(response.pagination);
+            }
+        });
+    });
+</script>
