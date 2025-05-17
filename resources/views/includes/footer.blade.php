@@ -117,14 +117,38 @@
 
     $('#paymentForm').submit(function(e) {
         e.preventDefault();
-        const formData = $(this).serialize();
+
+        const currentBalance = parseFloat($('#currentBalance').text()) || 0;
+        const enteredAmount = parseFloat($('#amount').val()) || 0;
+        const editPaymentId = $('#payment_id').val();
+        let maxAllowed = currentBalance;
+
+        if (editPaymentId) {
+            // If editing, find the original payment value and add it to current balance
+            $.get(`/payments/edit/${editPaymentId}`, function(payment) {
+                maxAllowed += parseFloat(payment.amount);
+                validateAndSubmit(maxAllowed, enteredAmount);
+            });
+        } else {
+            // If adding new payment
+            validateAndSubmit(maxAllowed, enteredAmount);
+        }
+    });
+
+    function validateAndSubmit(maxAllowed, enteredAmount) {
+        if (enteredAmount > maxAllowed) {
+            alert(`Entered amount (${enteredAmount}) exceeds the allowed limit (${maxAllowed}).`);
+            return;
+        }
+
+        const formData = $('#paymentForm').serialize();
         $.post(`/payments/save`, formData, function(response) {
             $('#payment_id').val('');
             $('#date').val(new Date().toISOString().split('T')[0]);
             $('#amount').val('');
             fetchPayments($('#customer_id').val());
         });
-    });
+    }
 
     function clearAll() {
         $('#customer_id').val('');
@@ -145,12 +169,16 @@
         if (confirm('Are you sure to delete this payment?')) {
             $.ajax({
                 url: `/payments/delete/${id}`,
-                type: 'DELETE',
+                type: 'POST',
                 data: {
+                    _method: 'DELETE',
                     _token: '{{ csrf_token() }}'
                 },
                 success: function() {
                     fetchPayments($('#customer_id').val());
+                },
+                error: function(xhr) {
+                    alert('Error: ' + xhr.responseText);
                 }
             });
         }

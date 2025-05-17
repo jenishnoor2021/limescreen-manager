@@ -179,7 +179,27 @@
                 {{ \Carbon\Carbon::parse($customer->verified_at)->format('d-m-Y H:i:s') }}
             </div>
             @endif
-            <div id="verifiedMsg" class="verified-msg mt-3">Already Verified</div>
+            <div id="verifiedMsg" class="verified-msg mt-3">Documents Verified Succesfully</div>
+        </div>
+    </div>
+
+    <!-- OTP Modal -->
+    <div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="otpForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="otpModalLabel">Enter OTP</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" id="otpInput" class="form-control" placeholder="Enter OTP" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Verify OTP</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -256,8 +276,13 @@
                     _token: '{{ csrf_token() }}' // ✅ CSRF token for Laravel
                 },
                 success: function(response) {
-                    // OTP sent, show modal
-                    new bootstrap.Modal(document.getElementById('otpModal')).show();
+                    var otpModalEl = document.getElementById('otpModal');
+                    if (otpModalEl) {
+                        var otpModal = new bootstrap.Modal(otpModalEl);
+                        otpModal.show();
+                    } else {
+                        alert("Modal element not found");
+                    }
                 },
                 error: function() {
                     alert('Failed to send OTP');
