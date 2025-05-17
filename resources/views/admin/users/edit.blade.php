@@ -30,7 +30,6 @@
                         <div class="mb-3">
                             <label for="role">Role<span class="text-danger">*</span></label>
                             <select name="role" id="role" class="form-select" required>
-                                <!-- <option value="User" {{ $user->role == 'User' ? 'selected' : '' }}>User</option> -->
                                 <option value="Manager" {{ $user->role == 'Manager' ? 'selected' : '' }}>Manager</option>
                             </select>
                             @if ($errors->has('role'))
@@ -64,39 +63,6 @@
                             @endif
                         </div>
                     </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
-                            <input type="email" name="email" class="form-control" id="email"
-                                placeholder="Enter Your Email" onkeypress='return (event.charCode != 32)'
-                                value="{{ $user->email }}" required>
-                            @if ($errors->has('email'))
-                            <div class="error text-danger">{{ $errors->first('email') }}</div>
-                            @endif
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="mobile" class="form-label">Mobile no<span class="text-danger">*</span></label>
-                            <input type="number" name="mobile" class="form-control" id="mobile" maxlength="10"
-                                pattern="\d{10}" placeholder="Enter number" title="Enter exactly 10 digits"
-                                value="{{ $user->mobile }}">
-                            @if ($errors->has('mobile'))
-                            <div class="error text-danger">{{ $errors->first('mobile') }}</div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="address" class="form-label">Address</label>
-                    <textarea type="text" name="address" class="form-control" id="address" placeholder="Enter Address">{{ $user->address }}</textarea>
-                    @if ($errors->has('address'))
-                    <div class="error text-danger">{{ $errors->first('address') }}</div>
-                    @endif
                 </div>
 
                 <div class="row">
@@ -154,28 +120,14 @@
                 username: {
                     required: true,
                 },
-                // address: {
-                //     required: true,
-                // },
-                mobile: {
-                    required: true,
-                },
                 password: {
                     required: true,
                 },
-                email: {
-                    required: true,
-                }
             },
             submitHandler: function(form) {
                 form.submit();
             }
         });
-    });
-</script>
-<script>
-    document.getElementById('mobile').addEventListener('input', function() {
-        this.value = this.value.replace(/\D/g, '').slice(0, 10);
     });
 </script>
 @endsection

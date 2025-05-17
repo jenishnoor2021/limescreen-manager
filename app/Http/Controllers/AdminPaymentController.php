@@ -56,6 +56,10 @@ class AdminPaymentController extends Controller
     {
         $payment = Payment::findOrFail($id);
         $payment->delete();
+
+        $customer = Customer::where('id', $payment->customers_id)->first();
+        $this->calculateBalance($customer->id, $customer->package_amount);
+
         return response()->json(['success' => true]);
     }
 }

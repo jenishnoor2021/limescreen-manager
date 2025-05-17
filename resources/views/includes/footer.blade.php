@@ -86,7 +86,7 @@
     function openPaymentModal(customerId) {
         $('#customer_id').val(customerId);
         $('#payment_id').val('');
-        $('#date').val('');
+        $('#date').val(new Date().toISOString().split('T')[0]);
         $('#amount').val('');
         fetchPayments(customerId);
         $('#paymentModal').modal('show');
@@ -120,7 +120,7 @@
         const formData = $(this).serialize();
         $.post(`/payments/save`, formData, function(response) {
             $('#payment_id').val('');
-            $('#date').val('');
+            $('#date').val(new Date().toISOString().split('T')[0]);
             $('#amount').val('');
             fetchPayments($('#customer_id').val());
         });
@@ -129,7 +129,7 @@
     function clearAll() {
         $('#customer_id').val('');
         $('#payment_id').val('');
-        $('#date').val('');
+        $('#date').val(new Date().toISOString().split('T')[0]);
         $('#amount').val('');
     }
 

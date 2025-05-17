@@ -91,6 +91,12 @@ Route::group(['middleware' => ['auth', 'usersession']], function () {
     Route::get('admin/package/edit/{id}', [AdminPackageController::class, 'edit'])->name('admin.package.edit');
     Route::patch('admin/package/update/{id}', [AdminPackageController::class, 'update'])->name('admin.package.update');
     Route::get('admin/package/destroy/{id}', [AdminPackageController::class, 'destroy'])->name('admin.package.destroy');
+
+    Route::get('/admin/payment-report', [AdminCustomerController::class, 'paymentReport'])->name('admin.payment.report');
+    Route::get('/admin/payment-export/show', [AdminCustomerController::class, 'paymentExportShow'])->name('admin.payment.export.show');
+
+    Route::get('/admin/client-payment-report', [AdminCustomerController::class, 'clientPaymentReport'])->name('admin.client-payment.report');
+    Route::get('/admin/client-payment-export/show', [AdminCustomerController::class, 'clientPaymentExportShow'])->name('admin.client-payment.export.show');
 });
 
 //Clear Cache facade value:

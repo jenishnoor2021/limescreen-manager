@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-            <h4 class="mb-sm-0 font-size-18">Client Report</h4>
+            <h4 class="mb-sm-0 font-size-18">Payment Report</h4>
         </div>
     </div>
 </div>
@@ -29,7 +29,7 @@
                 </div>
                 @endif
 
-                <form id="filterForm" action="{{ route('admin.export.show') }}" name="exportShow" method="GET"
+                <form id="filterForm" action="{{ route('admin.payment.export.show') }}" name="exportShow" method="GET"
                     enctype="multipart/form-data">
                     @csrf
                     <div data-repeater-list="group-a">
@@ -61,25 +61,6 @@
                             </div>
 
                             <div class="mb-3 col-lg-2">
-                                <label for="start_date">Status</label>
-                                <div>
-                                    <label class="form-check-label mb-2">
-                                        <input type="checkbox" class="form-check-input" name="verified[]" value="1"
-                                            {{ in_array('1', (array) request()->verified) ? 'checked' : '' }}>
-                                        Verified
-                                    </label><br />
-                                    <label class="form-check-label mb-2">
-                                        <input type="checkbox" name="verified[]" class="form-check-input" value="0"
-                                            {{ in_array('0', (array) request()->verified) ? 'checked' : '' }}>
-                                        Not Verified
-                                    </label><br />
-                                </div>
-                                @if ($errors->has('status'))
-                                <div class="error text-danger">{{ $errors->first('status') }}</div>
-                                @endif
-                            </div>
-
-                            <div class="mb-3 col-lg-2">
                                 <label for="start_date">Start Date:</label>
                                 <input type="date" name="start_date" class="form-control" id="start_date"
                                     value="{{ request()->start_date }}">
@@ -96,12 +77,14 @@
                                 <div class="error text-danger">{{ $errors->first('end_date') }}</div>
                                 @endif
                             </div>
+                        </div>
 
+                        <div class="row">
                             <div class="col-lg-1 align-self-center">
                                 <div class="d-flex gap-2">
                                     <input type="submit" class="btn btn-success mt-3 mt-lg-0" value="Show" />
                                     <a class="btn btn-light mt-3 mt-lg-0"
-                                        href="{{ URL::to('/admin/report') }}">Clear</a>
+                                        href="{{ URL::to('/admin/payment-report') }}">Clear</a>
                                 </div>
                             </div>
                         </div>
@@ -118,56 +101,21 @@
                 <table id="datatable" class="table table-bordered dt-responsive nowrap w-100 mt-3">
                     <thead>
                         <tr>
-                            <th><strong>Action</strong></th>
-                            <th><strong>Branch</strong></th>
-                            <th><strong>User</strong></th>
-                            <th><strong>Kid Name</strong></th>
-                            <th><strong>Father Name</strong></th>
-                            <th><strong>Mother Name</strong></th>
-                            <th><strong>Email</strong></th>
+                            <th><strong>Kid's Name</strong></th>
                             <th><strong>Mobile</strong></th>
-                            <th><strong>Whatsapp No</strong></th>
-                            <th><strong>Package</strong></th>
-                            <th><strong>Package Amount</strong></th>
-                            <th><strong>Advanced</strong></th>
-                            <th><strong>Balance</strong></th>
-                            <th><strong>Verified</strong></th>
-                            <th><strong>Verified At</strong></th>
-                            <th><strong>Link</strong></th>
-                            <th><strong>Address</strong></th>
-                            <th><strong>Remark</strong></th>
+                            <th><strong>Date</strong></th>
+                            <th><strong>Amount</strong></th>
+                            <!-- <th><strong>Balance</strong></th> -->
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($data as $customer)
+                        @foreach ($data as $payment)
                         <tr>
-                            <td>
-                                <a href="{{ route('admin.customers.edit', $customer->id) }}"
-                                    class="btn btn-outline-primary waves-effect waves-light"><i
-                                        class="fa fa-edit"></i></a>
-                            </td>
-                            <td>{{ $customer->branches->name }}</td>
-                            <td>{{ $customer->users->name }}</td>
-                            <td>{{ $customer->kid_name }}</td>
-                            <td>{{ $customer->father_name }}</td>
-                            <td>{{ $customer->mother_name }}</td>
-                            <td>{{ $customer->email }}</td>
-                            <td>{{ $customer->mobile }}</td>
-                            <td>{{ $customer->whatsapp_number }}</td>
-                            <td>{{ $customer->package }}</td>
-                            <td>{{ $customer->package_amount }}</td>
-                            <td>{{ $customer->advanced }}</td>
-                            <td>{{ $customer->balance }}</td>
-                            <td>{{ $customer->is_verified }}</td>
-                            <td>{{ $customer->verified_at }}</td>
-                            <td><a href="{{ URL::to('show/' . $customer->link) }}" target="_blank">Link</a>
-                            </td>
-                            <td>
-                                <p class="add-read-more show-less-content">{{ $customer->address }}</p>
-                            </td>
-                            <td>
-                                <p class="add-read-more show-less-content">{{ $customer->remark }}</p>
-                            </td>
+                            <td>{{ $payment->customers->kid_name }}</td>
+                            <td>{{ $payment->customers->mobile }}</td>
+                            <td>{{ !empty($payment->date) ? \Carbon\Carbon::parse($payment->date)->format('d-m-Y') : '-' }}</td>
+                            <td>{{ $payment->amount }}</td>
+                            <!-- <td></td> -->
                         </tr>
                         @endforeach
                     </tbody>
@@ -248,32 +196,6 @@
             loadUsers(initialBranchId, initialUserId);
         }
     });
-
-    // $(document).ready(function() {
-    //     $('#filterForm').on('submit', function(e) {
-    //         e.preventDefault();
-
-    //         const query = $(this).serialize();
-
-    //         $.ajax({
-    //             url: $(this).attr('action') + '?' + query,
-    //             method: 'GET',
-    //             success: function(response) {
-    //                 $('#filterModalBody').html(response.html);
-    //                 $('#filterModal').modal('show');
-
-    //                 if (response.hasData) {
-    //                     $('#exportBtn').prop('disabled', false);
-    //                 } else {
-    //                     $('#exportBtn').prop('disabled', true);
-    //                 }
-    //             },
-    //             error: function() {
-    //                 alert('Failed to load report data.');
-    //             }
-    //         });
-    //     });
-    // });
 
     $('#exportBtn').on('click', function() {
         // $('#filterForm').data('exporting', true).trigger('submit');

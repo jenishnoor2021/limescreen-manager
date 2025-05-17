@@ -22,7 +22,7 @@
                         <div class="d-flex">
                             <div class="flex-grow-1">
                                 <p class="text-muted fw-medium">Branches</p>
-                                <h4 class="mb-0">{{ $branches }}</h4>
+                                <h4 class="mb-0">{{ $branchesCount }}</h4>
                             </div>
 
                             <div class="flex-shrink-0 align-self-center">
@@ -167,6 +167,36 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="card-body">
+                <h4 class="card-title mb-4">Branches Collection</h4>
+                <div class="table-responsive">
+                    <table id="datatable" class="table table-bordered dt-responsive nowrap w-100 mt-3">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="align-middle">Branch Name</th>
+                                <th class="align-middle">Today Collection</th>
+                                <th class="align-middle">Total Collection</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($branches as $branch)
+                            <tr>
+                                <td>{{ $branch->name }}</td>
+                                <td>{{ $todayCollection[$branch->id] ?? 0; }}</td>
+                                <td>{{ $totalCollection[$branch->id] ?? 0; }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
                 <h4 class="card-title mb-4">Today Payment</h4>
                 @if(count($todayPayment)>0)
                 <div class="table-responsive">
@@ -255,19 +285,20 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Action</th>
-                                <th>User</th>
-                                <th>Branch</th>
                                 <th>Link</th>
+                                <th>Package</th>
+                                <th>Package Amount</th>
+                                <th>Advanced</th>
+                                <th>Balance</th>
+                                <th>Due Date</th>
+                                <th>Branch</th>
+                                <th>User</th>
                                 <th>Kid Name</th>
                                 <th>Father Name</th>
                                 <th>Mother Name</th>
                                 <th>Email</th>
                                 <th>Mobile</th>
                                 <th>Whatsapp No</th>
-                                <th>Package</th>
-                                <th>Package Amount</th>
-                                <th>Advanced</th>
-                                <th>Balance</th>
                                 <th>Verified</th>
                                 <th>Verified At</th>
                                 <th>Address</th>
@@ -294,6 +325,11 @@
                                         Copy
                                     </button>
                                 </td>
+                                <td>{{ $customer->package }}</td>
+                                <td>{{ $customer->package_amount }}</td>
+                                <td>{{ $customer->advanced }}</td>
+                                <td>{{ $customer->balance }}</td>
+                                <td>{{ !empty($customer->due_date) ? \Carbon\Carbon::parse($customer->due_date)->format('d-m-Y') : '-' }}</td>
                                 <td>{{ $customer->branches->name }}</td>
                                 <td>{{ $customer->users->name }}</td>
                                 <td>{{ $customer->kid_name }}</td>
@@ -302,10 +338,6 @@
                                 <td>{{ $customer->email }}</td>
                                 <td>{{ $customer->mobile }}</td>
                                 <td>{{ $customer->whatsapp_number }}</td>
-                                <td>{{ $customer->package }}</td>
-                                <td>{{ $customer->package_amount }}</td>
-                                <td>{{ $customer->advanced }}</td>
-                                <td>{{ $customer->balance }}</td>
                                 <td>{{ $customer->is_verified }}</td>
                                 <td>{{ $customer->verified_at }}</td>
 
@@ -325,96 +357,4 @@
         </div>
     </div>
 </div>
-@endsection
-
-@section('script')
-<!-- <script>
-    function openPaymentModal(customerId) {
-        $('#customer_id').val(customerId);
-        $('#payment_id').val('');
-        $('#date').val('');
-        $('#amount').val('');
-        fetchPayments(customerId);
-        $('#paymentModal').modal('show');
-    }
-
-    function fetchPayments(customerId) {
-        $.get(`/payments/${customerId}`, function(response) {
-            let rows = '';
-            response.payments.forEach((payment, index) => {
-                rows += `<tr>
-            <td>${payment.date}</td>
-            <td>${payment.amount}</td>
-            <td>
-                <button class="btn btn-sm btn-primary" onclick="editPayment(${payment.id})">Edit</button>
-                ${
-                    index > 0 
-                    ? `<button class="btn btn-sm btn-danger" onclick="deletePayment(${payment.id})">Delete</button>` 
-                    : ''
-                }
-            </td>
-        </tr>`;
-            });
-            const balance = parseFloat(response.balance) || 0;
-            $('#currentBalance').text(balance.toFixed(2));
-            $('#paymentsTable tbody').html(rows);
-        });
-    }
-
-    $('#paymentForm').submit(function(e) {
-        e.preventDefault();
-        const formData = $(this).serialize();
-        $.post(`/payments/save`, formData, function(response) {
-            $('#payment_id').val('');
-            $('#date').val('');
-            $('#amount').val('');
-            fetchPayments($('#customer_id').val());
-        });
-    });
-
-    function clearAll() {
-        $('#customer_id').val('');
-        $('#payment_id').val('');
-        $('#date').val('');
-        $('#amount').val('');
-    }
-
-    function editPayment(id) {
-        $.get(`/payments/edit/${id}`, function(payment) {
-            $('#payment_id').val(payment.id);
-            $('#date').val(payment.date);
-            $('#amount').val(payment.amount);
-        });
-    }
-
-    function deletePayment(id) {
-        if (confirm('Are you sure to delete this payment?')) {
-            $.ajax({
-                url: `/payments/delete/${id}`,
-                type: 'DELETE',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function() {
-                    fetchPayments($('#customer_id').val());
-                }
-            });
-        }
-    }
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.copy-btn').forEach(function(button) {
-            button.addEventListener('click', function() {
-                const link = this.getAttribute('data-link');
-                navigator.clipboard.writeText(link).then(() => {
-                    this.textContent = 'Copied!';
-                    setTimeout(() => this.textContent = 'Copy', 2000);
-                }).catch(err => {
-                    console.error('Failed to copy: ', err);
-                });
-            });
-        });
-    });
-</script> -->
 @endsection

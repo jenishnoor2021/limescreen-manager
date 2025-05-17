@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -44,26 +45,70 @@ class AdminController extends Controller
 
     public function dashboard()
     {
-        $branches = Branch::count();
+        $loginUser = Session::get('user');
+        $loginRole = $loginUser->role;
+
+        $branchesQuery = Branch::query();
+        $branchesCount = Branch::count();
         $users = User::where('role', '!=', 'Admin')->count();
-        $loginRole = Session::get('user')->role;
-        if ($loginRole == 'Admin') {
-            $customers = Customer::count();
-            $todayleads = Customer::whereDate('created_at', Carbon::today())->count();
-        } else if ($loginRole == 'Manager') {
-            $loginBranchesId = Auth::user()->branches_id;
-            $userIds = User::where('branches_id', $loginBranchesId)->pluck('id');
-            $customers = Customer::whereIn('users_id', $userIds)->count();
-            $todayleads = Customer::whereDate('created_at', Carbon::today())->whereIn('users_id', $userIds)->count();
+
+        // Prepare base queries
+        $customerQuery = Customer::query();
+
+        if ($loginRole === 'Admin') {
+            // No filters needed
+        } elseif ($loginRole === 'Manager') {
+            $loginBranchId = $loginUser->branches_id;
+            // $userIds = User::where('branches_id', $loginBranchId)->pluck('id');
+            // $customerQuery->whereIn('users_id', $userIds);
+            $customerQuery->where('branches_id', $loginBranchId);
+            $branchesQuery->where('id', $loginBranchId);
         } else {
-            $customers = Customer::where('users_id', Session::get('user')->id)->count();
-            $todayleads = Customer::whereDate('created_at', Carbon::today())->where('users_id', Session::get('user')->id)->count();
+            $customerQuery->where('users_id', $loginUser->id);
         }
 
-        $oldPendingPayment = Customer::where('balance', '!=', 0)->whereDate('due_date', '<', now())->get();
-        $todayPayment = Customer::where('balance', '!=', 0)->whereDate('due_date', now())->get();
+        // Fetch values
+        $customers = (clone $customerQuery)->count();
+        $todayleads = (clone $customerQuery)->whereDate('created_at', Carbon::today())->count();
 
-        return view('admin.index', compact('branches', 'users', 'customers', 'todayleads', 'oldPendingPayment', 'todayPayment'));
+        $oldPendingPayment = (clone $customerQuery)
+            ->where('balance', '!=', 0)
+            ->whereDate('due_date', '<', now())
+            ->get();
+
+        $todayPayment = (clone $customerQuery)
+            ->where('balance', '!=', 0)
+            ->whereDate('due_date', now())
+            ->get();
+
+        $branches = $branchesQuery->get();
+        $today = Carbon::today()->toDateString();
+
+        $totalCollection = DB::table('payments')
+            ->join('customers', 'payments.customers_id', '=', 'customers.id')
+            ->select('customers.branches_id', DB::raw('SUM(payments.amount) as total_amount'))
+            ->groupBy('customers.branches_id')
+            ->pluck('total_amount', 'customers.branches_id');
+
+        // Today's collection per branch
+        $todayCollection = DB::table('payments')
+            ->join('customers', 'payments.customers_id', '=', 'customers.id')
+            ->whereDate('payments.date', $today)
+            ->select('customers.branches_id', DB::raw('SUM(payments.amount) as today_amount'))
+            ->groupBy('customers.branches_id')
+            ->pluck('today_amount', 'customers.branches_id');
+
+        return view('admin.index', compact(
+            'branchesCount',
+            'users',
+            'customers',
+            'todayleads',
+            'oldPendingPayment',
+            'todayPayment',
+            'branches',
+            'totalCollection',
+            'todayCollection'
+        ));
     }
 
     public function profiledit($id)
@@ -104,10 +149,28 @@ class AdminController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::where('role', '!=', 'Admin')->get();
-        return view('admin.users.index', compact('users'));
+        $branches = Branch::orderBy('id', 'DESC')->get();
+        $loginRole = Session::get('user')->role;
+        $loginBranchId = Session::get('user')->branches_id;
+
+        $usersQuery = User::query();
+
+        if ($loginRole != 'Admin') {
+            $usersQuery->where('branches_id', $loginBranchId)
+                ->where('role', '!=', 'Manager');
+        } else {
+            $usersQuery->where('role', '!=', 'Admin');
+
+            if ($request->filled('branch')) {
+                $usersQuery->where('branches_id', $request->branch);
+            }
+        }
+
+        $users = $usersQuery->get();
+
+        return view('admin.users.index', compact('users', 'branches'));
     }
 
     /**
@@ -139,9 +202,6 @@ class AdminController extends Controller
             'branches_id' => 'required',
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'name' => ['required', 'string', 'max:255'],
-            'mobile' => 'required',
-            'address' => 'required',
-            'email' => ['required', 'email', 'max:255', 'unique:users'],
             'password' => 'required',
         ]);
 
@@ -197,9 +257,6 @@ class AdminController extends Controller
             'branches_id' => 'required',
             'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
             'name' => ['required', 'string', 'max:255'],
-            'mobile' => 'required',
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'address' => 'required',
             'password' => ['nullable', 'string', 'min:8'],
         ]);
 

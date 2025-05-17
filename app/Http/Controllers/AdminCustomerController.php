@@ -5,21 +5,22 @@ namespace App\Http\Controllers;
 use Validator;
 use App\Models\User;
 use App\Models\Branch;
+use App\Models\Package;
 use App\Models\Payment;
 use App\Models\Customer;
 use App\Models\Document;
 use Illuminate\Http\Request;
+use App\Exports\PaymentExport;
 use Illuminate\Support\Carbon;
-use App\Imports\CustomerImport;
 use App\Exports\CustomersExport;
-use App\Models\Package;
 use Illuminate\Support\Facades\DB;
+use App\Exports\ClientPaymentExport;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
 
 class AdminCustomerController extends Controller
 {
@@ -372,13 +373,113 @@ class AdminCustomerController extends Controller
             $fileName = time() . '_client.xlsx';  // Change file extension to .xlsx
             return Excel::download(new CustomersExport($data), $fileName, \Maatwebsite\Excel\Excel::XLSX);
         }
-
-        // $view = view('partials.customer_report_modal', compact('data'))->render();
-        // return response()->json([
-        //     'html' => $view,
-        //     'hasData' => $data->isNotEmpty(),
-        // ]);
         return view('admin.customers.report', compact('branches', 'data'));
+    }
+
+    public function paymentReport()
+    {
+        $loginRole = Session::get('user')->role;
+        if ($loginRole == 'Admin') {
+            $branches = Branch::orderBy('id', 'DESC')->get();
+        } else {
+            $loginBranchesId = Session::get('user')->branches_id;
+            $branches = Branch::where('id', $loginBranchesId)->get();
+        }
+        $data = [];
+        return view('admin.customers.payment_report', compact('branches', 'data'));
+    }
+
+    public function paymentExportShow(Request $request)
+    {
+        $loginRole = Session::get('user')->role;
+        if ($loginRole == 'Admin') {
+            $branches = Branch::orderBy('id', 'DESC')->get();
+        } else {
+            $loginBranchesId = Session::get('user')->branches_id;
+            $branches = Branch::where('id', $loginBranchesId)->get();
+        }
+        $clientIDs = Customer::query()
+            ->when(
+                $request->filled('branches_id') && $request->branches_id !== 'ALL',
+                fn($q) =>
+                $q->where('branches_id', $request->branches_id)
+            )
+            ->when(
+                $request->filled('users_id') && $request->users_id !== 'ALL',
+                fn($q) =>
+                $q->where('users_id', $request->users_id)
+            )
+            ->when(
+                $request->start_date,
+                fn($q, $start) =>
+                $q->whereDate('created_at', '>=', $start)
+            )
+            ->when(
+                $request->end_date,
+                fn($q, $end) =>
+                $q->whereDate('created_at', '<=', $end)
+            )
+            ->pluck('id');
+
+        $data = Payment::whereIn('customers_id', $clientIDs)->get();
+
+        if ($request->has('download')) {
+            $fileName = time() . '_payment.xlsx';  // Change file extension to .xlsx
+            return Excel::download(new PaymentExport($data), $fileName, \Maatwebsite\Excel\Excel::XLSX);
+        }
+        return view('admin.customers.payment_report', compact('branches', 'data'));
+    }
+
+    public function clientPaymentReport()
+    {
+        $loginRole = Session::get('user')->role;
+        if ($loginRole == 'Admin') {
+            $branches = Branch::orderBy('id', 'DESC')->get();
+        } else {
+            $loginBranchesId = Session::get('user')->branches_id;
+            $branches = Branch::where('id', $loginBranchesId)->get();
+        }
+        $data = [];
+        return view('admin.customers.client_payment_report', compact('branches', 'data'));
+    }
+
+    public function clientPaymentExportShow(Request $request)
+    {
+        $loginRole = Session::get('user')->role;
+        if ($loginRole == 'Admin') {
+            $branches = Branch::orderBy('id', 'DESC')->get();
+        } else {
+            $loginBranchesId = Session::get('user')->branches_id;
+            $branches = Branch::where('id', $loginBranchesId)->get();
+        }
+        $data = Customer::query()
+            ->when(
+                $request->filled('branches_id') && $request->branches_id !== 'ALL',
+                fn($q) =>
+                $q->where('branches_id', $request->branches_id)
+            )
+            ->when(
+                $request->filled('users_id') && $request->users_id !== 'ALL',
+                fn($q) =>
+                $q->where('users_id', $request->users_id)
+            )
+            ->when(
+                $request->start_date,
+                fn($q, $start) =>
+                $q->whereDate('created_at', '>=', $start)
+            )
+            ->when(
+                $request->end_date,
+                fn($q, $end) =>
+                $q->whereDate('created_at', '<=', $end)
+            )
+            ->get();
+
+        if ($request->has('download')) {
+            $fileName = time() . '_clientPayment.xlsx';  // Change file extension to .xlsx
+            return Excel::download(new ClientPaymentExport($data), $fileName, \Maatwebsite\Excel\Excel::XLSX);
+        }
+        return view('admin.customers.client_payment_report', compact('branches', 'data'));
     }
 
     public function bulkDelete(Request $request)

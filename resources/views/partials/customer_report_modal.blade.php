@@ -23,32 +23,32 @@
     </thead>
     <tbody>
         @forelse($data as $customer)
-            <tr>
-                <td>{{ $customer->branches->name }}</td>
-                <td>{{ $customer->users->name }}</td>
-                <td>{{ $customer->kid_name }}</td>
-                <td>{{ $customer->father_name }}</td>
-                <td>{{ $customer->mother_name }}</td>
-                <td>{{ $customer->email }}</td>
-                <td>{{ $customer->mobile }}</td>
-                <td>{{ $customer->whatsapp_number }}</td>
-                <td>{{ $customer->package }}</td>
-                <td>{{ $customer->package_amount }}</td>
-                <td>{{ $customer->advanced }}</td>
-                <td>{{ $customer->balance }}</td>
-                <td>{{ $customer->is_verified }}</td>
-                <td>{{ $customer->verified_at }}</td>
-                <td>{{ URL::to('show/' . $customer->link) }}</td>
-                <td>{{ $customer->address }}</td>
-                <td>{{ $customer->remark }}</td>
-                <td>{{ $customer->created_at->format('d-m-Y') }}</td>
-            </tr>
+        <tr>
+            <td>{{ $customer->branches->name }}</td>
+            <td>{{ $customer->users->name }}</td>
+            <td>{{ $customer->kid_name }}</td>
+            <td>{{ $customer->father_name }}</td>
+            <td>{{ $customer->mother_name }}</td>
+            <td>{{ $customer->email }}</td>
+            <td>{{ $customer->mobile }}</td>
+            <td>{{ $customer->whatsapp_number }}</td>
+            <td>{{ $customer->package }}</td>
+            <td>{{ $customer->package_amount }}</td>
+            <td>{{ $customer->advanced }}</td>
+            <td>{{ $customer->balance }}</td>
+            <td>{{ $customer->is_verified }}</td>
+            <td>{{ !empty($customer->verified_at) ? \Carbon\Carbon::parse($customer->verified_at)->format('d-m-Y') : '-' }}</td>
+            <td>{{ URL::to('show/' . $customer->link) }}</td>
+            <td>{{ $customer->address }}</td>
+            <td>{{ $customer->remark }}</td>
+            <td>{{ $customer->created_at->format('d-m-Y') }}</td>
+        </tr>
         @empty
-            <tr>
-                <td colspan="11">
-                    <center>No data found.</center>
-                </td>
-            </tr>
+        <tr>
+            <td colspan="11">
+                <center>No data found.</center>
+            </td>
+        </tr>
         @endforelse
     </tbody>
 </table>

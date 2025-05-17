@@ -63,10 +63,22 @@
 
                         <span id="menu-navi"
                             class="d-sm-flex flex-wrap text-center text-sm-start justify-content-sm-between">
-                            <div class="">
+                            <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
                                 <a class="btn btn-info waves-effect waves-light"
                                     href="{{ route('admin.users.create') }}"><i class="fa fa-plus editable"
                                         style="font-size:15px;">&nbsp;ADD</i></a>
+                                @if (Session::get('user')['role'] == 'Admin')
+                                <form method="GET" action="{{ route('admin.users.index') }}" class="">
+                                    <select name="branch" class="form-select w-auto" onchange="this.form.submit()">
+                                        <option value="" {{ request()->branch == '' ? 'selected' : '' }}>Select Branch</option>
+                                        <option value="" {{ request()->branch == '' ? 'selected' : '' }}>All</option>
+                                        @foreach ($branches as $branch)
+                                        <option value="{{$branch->id}}"
+                                            {{ request()->branch == $branch->id ? 'selected' : '' }}>{{$branch->name}}</option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                                @endif
                             </div>
                         </span>
 
@@ -83,7 +95,6 @@
                             <th>Branch</th>
                             <th>Name</th>
                             <th>Mobile</th>
-                            <th>Address</th>
                             <th>Active/De-active</th>
                         </tr>
                     </thead>
@@ -106,9 +117,6 @@
                             <td>{{ $user->branches->name }}</td>
                             <td>{{ $user->username }}</td>
                             <td>{{ $user->mobile }}</td>
-                            <td>
-                                <p class="add-read-more show-less-content">{{ $user->address }}</p>
-                            </td>
                             <td>
                                 @if (Session::get('user')['role'] != 'User')
                                 <div class="form-check form-switch">

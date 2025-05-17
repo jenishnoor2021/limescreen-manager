@@ -47,6 +47,21 @@
                     <span key="t-chat">Report</span>
                 </a>
             </li>
+
+            @if(Session::get('user')['role'] == 'Admin')
+            <li>
+                <a href="/admin/payment-report" class="waves-effect">
+                    <i class="bx bx-home-circle"></i>
+                    <span key="t-chat">Payment Report</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/client-payment-report" class="waves-effect">
+                    <i class="bx bx-home-circle"></i>
+                    <span key="t-chat">Client Payment Report</span>
+                </a>
+            </li>
+            @endif
         </ul>
     </div>
     <!-- Sidebar -->

@@ -38,8 +38,8 @@
                                 @endif
 
                                 <form method="GET" action="{{ route('admin.customers.index') }}"
-                                    class="d-flex align-items-center gap-2 flex-wrap mb-0">
-                                    <select name="date_filter" class="form-select form-select-sm w-auto"
+                                    class="d-flex align-items-center gap-2 flex-wrap mb-0" id="filterForm">
+                                    <select name="date_filter" class="form-select w-auto"
                                         onchange="toggleCustomRange(this.value)">
                                         <option value="today"
                                             {{ request()->date_filter == 'today' ? 'selected' : '' }}>Today</option>
@@ -64,16 +64,19 @@
                                             All</option>
                                     </select>
 
-                                    <input type="date" name="start_date" class="form-control form-control-sm w-auto"
+                                    <input type="date" name="start_date" class="form-control w-auto"
                                         value="{{ request('start_date') }}" id="start_date"
                                         style="display: {{ request('date_filter') == 'custom' ? 'block' : 'none' }};">
 
-                                    <input type="date" name="end_date" class="form-control form-control-sm w-auto"
+                                    <input type="date" name="end_date" class="form-control w-auto"
                                         value="{{ request('end_date') }}" id="end_date"
                                         style="display: {{ request('date_filter') == 'custom' ? 'block' : 'none' }};">
 
-                                    <button type="submit"
-                                        class="btn btn-primary waves-effect waves-light">Filter</button>
+                                    <button type="submit" id="submitBtn" class="btn btn-primary"
+                                        style="display: {{ request('date_filter') == 'custom' ? 'inline-block' : 'none' }};">
+                                        Filter
+                                    </button>
+
                                 </form>
 
                             </div>
@@ -228,9 +231,20 @@
 @section('script')
 <script>
     function toggleCustomRange(value) {
-        const show = value === 'custom';
-        document.getElementById('start_date').style.display = show ? 'block' : 'none';
-        document.getElementById('end_date').style.display = show ? 'block' : 'none';
+        const isCustom = value === 'custom';
+        let sDate = document.getElementById('start_date');
+        let eDate = document.getElementById('end_date');
+
+        sDate.style.display = isCustom ? 'block' : 'none';
+        eDate.style.display = isCustom ? 'block' : 'none';
+
+        document.getElementById('submitBtn').style.display = isCustom ? 'inline-block' : 'none';
+
+        if (!isCustom) {
+            sDate.value = '';
+            eDate.value = '';
+            document.getElementById('filterForm').submit();
+        }
     }
 </script>
 <script>
@@ -285,93 +299,4 @@
             .catch(err => console.error(err));
     });
 </script>
-<!-- <script>
-    function openPaymentModal(customerId) {
-        $('#customer_id').val(customerId);
-        $('#payment_id').val('');
-        $('#date').val('');
-        $('#amount').val('');
-        fetchPayments(customerId);
-        $('#paymentModal').modal('show');
-    }
-
-    function fetchPayments(customerId) {
-        $.get(`/payments/${customerId}`, function(response) {
-            let rows = '';
-            response.payments.forEach((payment, index) => {
-                rows += `<tr>
-                <td>${payment.date}</td>
-                <td>${payment.amount}</td>
-                <td>
-                    <button class="btn btn-sm btn-primary" onclick="editPayment(${payment.id})">Edit</button>
-                    ${
-                        index > 0 
-                        ? `<button class="btn btn-sm btn-danger" onclick="deletePayment(${payment.id})">Delete</button>` 
-                        : ''
-                    }
-                </td>
-            </tr>`;
-            });
-            const balance = parseFloat(response.balance) || 0;
-            $('#currentBalance').text(balance.toFixed(2));
-            $('#paymentsTable tbody').html(rows);
-        });
-    }
-
-    $('#paymentForm').submit(function(e) {
-        e.preventDefault();
-        const formData = $(this).serialize();
-        $.post(`/payments/save`, formData, function(response) {
-            $('#payment_id').val('');
-            $('#date').val('');
-            $('#amount').val('');
-            fetchPayments($('#customer_id').val());
-        });
-    });
-
-    function clearAll() {
-        $('#customer_id').val('');
-        $('#payment_id').val('');
-        $('#date').val('');
-        $('#amount').val('');
-    }
-
-    function editPayment(id) {
-        $.get(`/payments/edit/${id}`, function(payment) {
-            $('#payment_id').val(payment.id);
-            $('#date').val(payment.date);
-            $('#amount').val(payment.amount);
-        });
-    }
-
-    function deletePayment(id) {
-        if (confirm('Are you sure to delete this payment?')) {
-            $.ajax({
-                url: `/payments/delete/${id}`,
-                type: 'DELETE',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function() {
-                    fetchPayments($('#customer_id').val());
-                }
-            });
-        }
-    }
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.copy-btn').forEach(function(button) {
-            button.addEventListener('click', function() {
-                const link = this.getAttribute('data-link');
-                navigator.clipboard.writeText(link).then(() => {
-                    this.textContent = 'Copied!';
-                    setTimeout(() => this.textContent = 'Copy', 2000);
-                }).catch(err => {
-                    console.error('Failed to copy: ', err);
-                });
-            });
-        });
-    });
-</script> -->
 @endsection

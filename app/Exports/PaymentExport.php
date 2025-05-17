@@ -5,9 +5,8 @@ namespace App\Exports;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 
-class CustomersExport implements FromView
+class PaymentExport implements FromView
 {
-
     protected $data;
 
     public function __construct($data)
@@ -16,7 +15,7 @@ class CustomersExport implements FromView
     }
     public function view(): View
     {
-        return view('partials.customer_report_modal', [
+        return view('partials.payment_report_modal', [
             'data' => $this->data
         ]);
     }
