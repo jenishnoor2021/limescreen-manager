@@ -34,7 +34,7 @@
                     @csrf
                     <div data-repeater-list="group-a">
                         <div data-repeater-item class="row">
-                            <div class="mb-3 col-lg-3">
+                            <div class="mb-3 col-lg-2">
                                 <label for="branches_id">Branch</label>
                                 <select name="branches_id" id="branches_id" class="form-select" required>
                                     <option value="">Select Branch</option>
@@ -50,7 +50,7 @@
                                 @endif
                             </div>
 
-                            <div class="mb-3 col-lg-3">
+                            <div class="mb-3 col-lg-2">
                                 <label for="users_id">Users</label>
                                 <select name="users_id" id="users_id" class="form-select" required>
                                     <option value="">Select User</option>
@@ -80,21 +80,45 @@
                             </div>
 
                             <div class="mb-3 col-lg-2">
-                                <label for="start_date">Start Date:</label>
-                                <input type="date" name="start_date" class="form-control" id="start_date"
-                                    value="{{ request()->start_date }}">
-                                @if ($errors->has('start_date'))
-                                <div class="error text-danger">{{ $errors->first('start_date') }}</div>
-                                @endif
+                                <label for="date_filter">Date</label>
+                                <select name="date_filter" class="form-select w-auto"
+                                    onchange="toggleCustomRange(this.value)">
+                                    <option value="today"
+                                        {{ request()->date_filter == 'today' ? 'selected' : '' }}>Today</option>
+                                    <option value="yesterday"
+                                        {{ request()->date_filter == 'yesterday' ? 'selected' : '' }}>Yesterday
+                                    </option>
+                                    <option value="week" {{ request()->date_filter == 'week' ? 'selected' : '' }}>
+                                        This Week</option>
+                                    <option value="last_week"
+                                        {{ request()->date_filter == 'last_week' ? 'selected' : '' }}>Last Week
+                                    </option>
+                                    <option value="month"
+                                        {{ request()->date_filter == 'month' ? 'selected' : '' }}>This Month
+                                    </option>
+                                    <option value="last_month"
+                                        {{ request()->date_filter == 'last_month' ? 'selected' : '' }}>Last Month
+                                    </option>
+                                    <option value="custom"
+                                        {{ request()->date_filter == 'custom' ? 'selected' : '' }}>Custom Range
+                                    </option>
+                                    <option value="all" {{ request()->date_filter == 'all' ? 'selected' : '' }}>
+                                        All</option>
+                                </select>
                             </div>
 
                             <div class="mb-3 col-lg-2">
-                                <label for="end_date">End Date:</label>
-                                <input type="date" name="end_date" class="form-control" id="end_date"
-                                    value="{{ request()->end_date }}">
-                                @if ($errors->has('end_date'))
-                                <div class="error text-danger">{{ $errors->first('end_date') }}</div>
-                                @endif
+                                <label for="start_date" id="start_label">Start Date</label>
+                                <input type="date" name="start_date" class="form-control w-auto"
+                                    value="{{ request()->start_date }}" id="start_date"
+                                    style="display: {{ request()->date_filter == 'custom' ? 'block' : 'none' }};">
+                            </div>
+
+                            <div class="mb-3 col-lg-2">
+                                <label for="end_date" id="end_label">End Date</label>
+                                <input type="date" name="end_date" class="form-control w-auto"
+                                    value="{{ request()->end_date }}" id="end_date"
+                                    style="display: {{ request()->date_filter == 'custom' ? 'block' : 'none' }};">
                             </div>
 
                             <div class="col-lg-1 align-self-center">
@@ -205,8 +229,31 @@
             }
         });
     });
+
+    let slDate = document.getElementById('start_label');
+    let elDate = document.getElementById('end_label');
+    slDate.style.display = 'none';
+    elDate.style.display = 'none';
+
+    function toggleCustomRange(value) {
+        const isCustom = value === 'custom';
+        let sDate = document.getElementById('start_date');
+        let eDate = document.getElementById('end_date');
+
+        sDate.style.display = isCustom ? 'block' : 'none';
+        eDate.style.display = isCustom ? 'block' : 'none';
+        slDate.style.display = isCustom ? 'block' : 'none';
+        elDate.style.display = isCustom ? 'block' : 'none';
+
+
+        if (!isCustom) {
+            sDate.value = '';
+            eDate.value = '';
+            slDate.style.display = 'none';
+            elDate.style.display = 'none';
+        }
+    }
 </script>
-{{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> --}}
 <script>
     $(document).ready(function() {
         function loadUsers(branchId, selectedUserId = '') {
@@ -248,32 +295,6 @@
             loadUsers(initialBranchId, initialUserId);
         }
     });
-
-    // $(document).ready(function() {
-    //     $('#filterForm').on('submit', function(e) {
-    //         e.preventDefault();
-
-    //         const query = $(this).serialize();
-
-    //         $.ajax({
-    //             url: $(this).attr('action') + '?' + query,
-    //             method: 'GET',
-    //             success: function(response) {
-    //                 $('#filterModalBody').html(response.html);
-    //                 $('#filterModal').modal('show');
-
-    //                 if (response.hasData) {
-    //                     $('#exportBtn').prop('disabled', false);
-    //                 } else {
-    //                     $('#exportBtn').prop('disabled', true);
-    //                 }
-    //             },
-    //             error: function() {
-    //                 alert('Failed to load report data.');
-    //             }
-    //         });
-    //     });
-    // });
 
     $('#exportBtn').on('click', function() {
         // $('#filterForm').data('exporting', true).trigger('submit');

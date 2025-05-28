@@ -175,6 +175,8 @@
                                 <th class="align-middle">Branch Name</th>
                                 <th class="align-middle">Today Collection</th>
                                 <th class="align-middle">Total Collection</th>
+                                <th class="align-middle">Package Amount</th>
+                                <th class="align-middle">Pending Collection</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -183,11 +185,64 @@
                                 <td>{{ $branch->name }}</td>
                                 <td>{{ $todayCollection[$branch->id] ?? 0; }}</td>
                                 <td>{{ $totalCollection[$branch->id] ?? 0; }}</td>
+                                <td>{{ $recivedCollection[$branch->id] ?? 0; }}</td>
+                                <td>{{ $pendingCollection[$branch->id] ?? 0; }}</td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <form id="filterForm" action="{{ route('admin') }}" name="branchesShow" method="GET"
+                    enctype="multipart/form-data">
+                    @csrf
+                    <div data-repeater-list="group-a">
+                        <div data-repeater-item class="row">
+                            <div class="mb-3 col-lg-3">
+                                <label for="branches_id">Branch</label>
+                                <select name="branches_id" id="branches_id" class="form-select" required>
+                                    <option value="">Select Branch</option>
+                                    @foreach ($branches as $branch)
+                                    <option value="{{ $branch->id }}"
+                                        {{ request()->branches_id == $branch->id ? 'selected' : '' }}>
+                                        {{ $branch->name }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                                @if ($errors->has('branches_id'))
+                                <div class="error text-danger">{{ $errors->first('branches_id') }}</div>
+                                @endif
+                            </div>
+
+                            <div class="mb-3 col-lg-3">
+                                <label for="users_id">Managers</label>
+                                <select name="users_id" id="users_id" class="form-select" required>
+                                    <option value="">Select Manager</option>
+                                </select>
+                                @if ($errors->has('users_id'))
+                                <div class="error text-danger">{{ $errors->first('users_id') }}</div>
+                                @endif
+                            </div>
+
+                            <div class="col-lg-1 align-self-center">
+                                <div class="d-flex gap-2">
+                                    <input type="submit" class="btn btn-success mt-3 mt-lg-0" value="Show" />
+                                    <a class="btn btn-light mt-3 mt-lg-0"
+                                        href="{{ URL::to('/admin/dashboard') }}">Clear</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -243,8 +298,8 @@
                                         Copy
                                     </button>
                                 </td>
-                                <td>{{ $customer->branches->name }}</td>
-                                <td>{{ $customer->users->name }}</td>
+                                <td>{{ $customer->branches ? $customer->branches->name : '' }}</td>
+                                <td>{{ $customer->branches ? $customer->branches->name : '' }}</td>
                                 <td>{{ $customer->kid_name }}</td>
                                 <td>{{ $customer->father_name }}</td>
                                 <td>{{ $customer->mother_name }}</td>
@@ -330,8 +385,8 @@
                                 <td>{{ $customer->advanced }}</td>
                                 <td>{{ $customer->balance }}</td>
                                 <td>{{ !empty($customer->due_date) ? \Carbon\Carbon::parse($customer->due_date)->format('d-m-Y') : '-' }}</td>
-                                <td>{{ $customer->branches->name }}</td>
-                                <td>{{ $customer->users->name }}</td>
+                                <td>{{ $customer->branches ? $customer->branches->name : '' }}</td>
+                                <td>{{ $customer->users ? $customer->users->name : '' }}</td>
                                 <td>{{ $customer->kid_name }}</td>
                                 <td>{{ $customer->father_name }}</td>
                                 <td>{{ $customer->mother_name }}</td>
@@ -357,4 +412,49 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('script')
+<script>
+    $(document).ready(function() {
+        function loadUsers(branchId, selectedUserId = '') {
+            if (branchId) {
+                $.ajax({
+                    url: '/get-users-by-branch/' + branchId,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        $('#users_id').empty();
+                        $('#users_id').append('<option value="ALL">ALL</option>');
+
+                        $.each(data, function(key, user) {
+                            let selected = user.id == selectedUserId ? 'selected' : '';
+                            $('#users_id').append('<option value="' + user.id + '" ' +
+                                selected + '>' + user.name + '</option>');
+                        });
+
+                        if (selectedUserId === 'ALL') {
+                            $('#users_id').val('ALL');
+                        }
+                    }
+                });
+            } else {
+                $('#users_id').empty().append('<option value="">Select User</option>');
+            }
+        }
+
+        // On change
+        $('#branches_id').change(function() {
+            loadUsers($(this).val());
+        });
+
+        // On page load
+        const initialBranchId = '{{ request()->branches_id }}';
+        const initialUserId = '{{ request()->users_id }}';
+
+        if (initialBranchId) {
+            loadUsers(initialBranchId, initialUserId);
+        }
+    });
+</script>
 @endsection

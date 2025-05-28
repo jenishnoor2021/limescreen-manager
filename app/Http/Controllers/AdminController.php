@@ -43,7 +43,7 @@ class AdminController extends Controller
         return redirect('/');
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $loginUser = Session::get('user');
         $loginRole = $loginUser->role;
@@ -59,12 +59,21 @@ class AdminController extends Controller
             // No filters needed
         } elseif ($loginRole === 'Manager') {
             $loginBranchId = $loginUser->branches_id;
-            // $userIds = User::where('branches_id', $loginBranchId)->pluck('id');
-            // $customerQuery->whereIn('users_id', $userIds);
+            $loginUserId = $loginUser->users_id;
+            $userIds = User::where('branches_id', $loginBranchId)->where('users_id', $loginUserId)->pluck('id');
+            $customerQuery->whereIn('users_id', $userIds);
             $customerQuery->where('branches_id', $loginBranchId);
             $branchesQuery->where('id', $loginBranchId);
         } else {
             $customerQuery->where('users_id', $loginUser->id);
+        }
+
+        if ($request->filled('branches_id') && $request->branches_id !== 'ALL') {
+            $customerQuery->where('branches_id', $request->branches_id);
+        }
+
+        if ($request->filled('users_id') && $request->users_id !== 'ALL') {
+            $customerQuery->where('users_id', $request->users_id);
         }
 
         // Fetch values
@@ -98,6 +107,18 @@ class AdminController extends Controller
             ->groupBy('customers.branches_id')
             ->pluck('today_amount', 'customers.branches_id');
 
+        $recivedCollection = DB::table('payments')
+            ->join('customers', 'payments.customers_id', '=', 'customers.id')
+            ->select('customers.branches_id', DB::raw('SUM(customers.package_amount) as recived_amount'))
+            ->groupBy('customers.branches_id')
+            ->pluck('recived_amount', 'customers.branches_id');
+
+        $pendingCollection = DB::table('payments')
+            ->join('customers', 'payments.customers_id', '=', 'customers.id')
+            ->select('customers.branches_id', DB::raw('SUM(customers.balance) as pending_amount'))
+            ->groupBy('customers.branches_id')
+            ->pluck('pending_amount', 'customers.branches_id');
+
         return view('admin.index', compact(
             'branchesCount',
             'users',
@@ -107,7 +128,9 @@ class AdminController extends Controller
             'todayPayment',
             'branches',
             'totalCollection',
-            'todayCollection'
+            'todayCollection',
+            'recivedCollection',
+            'pendingCollection'
         ));
     }
 

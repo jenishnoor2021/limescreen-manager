@@ -139,8 +139,8 @@
                                     Copy
                                 </button>
                             </td>
-                            <td>{{ $customer->branches->name }}</td>
-                            <td>{{ $customer->users->name }}</td>
+                            <td>{{ $customer->branches ? $customer->branches->name : '' }}</td>
+                            <td>{{ $customer->users ? $customer->users->name : '' }}</td>
                             <td>{{ $customer->kid_name }}</td>
                             <td>{{ $customer->father_name }}</td>
                             <td>{{ $customer->mother_name }}</td>

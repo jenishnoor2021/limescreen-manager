@@ -314,6 +314,8 @@ class AdminCustomerController extends Controller
     public function destroy($id)
     {
         $customer = Customer::findOrFail($id);
+        Document::where('customers_id ', $id)->delete();
+        Payment::where('customers_id ', $id)->delete();
         $customer->delete();
 
         return Redirect::back()->with('success', "Delete Record Successfully");
@@ -341,6 +343,53 @@ class AdminCustomerController extends Controller
         } else {
             $branches = Branch::where('id', $loginBranchesId)->get();
         }
+
+        $startDate = null;
+        $endDate = null;
+
+        switch ($request->date_filter) {
+            case 'today':
+                $startDate = Carbon::today();
+                $endDate = Carbon::today();
+                break;
+
+            case 'yesterday':
+                $startDate = Carbon::yesterday();
+                $endDate = Carbon::yesterday();
+                break;
+
+            case 'week':
+                $startDate = Carbon::now()->startOfWeek();
+                $endDate = Carbon::now()->endOfWeek();
+                break;
+
+            case 'last_week':
+                $startDate = Carbon::now()->subWeek()->startOfWeek();
+                $endDate = Carbon::now()->subWeek()->endOfWeek();
+                break;
+
+            case 'month':
+                $startDate = Carbon::now()->startOfMonth();
+                $endDate = Carbon::now()->endOfMonth();
+                break;
+
+            case 'last_month':
+                $startDate = Carbon::now()->subMonth()->startOfMonth();
+                $endDate = Carbon::now()->subMonth()->endOfMonth();
+                break;
+
+            case 'custom':
+                $startDate = $request->start_date;
+                $endDate = $request->end_date;
+                break;
+
+            case 'all':
+            default:
+                $startDate = null;
+                $endDate = null;
+                break;
+        }
+
         $data = Customer::query()
             ->when(
                 $request->filled('branches_id') && $request->branches_id !== 'ALL',
@@ -358,14 +407,14 @@ class AdminCustomerController extends Controller
                 $q->whereIn('is_verified', $request->verified)
             )
             ->when(
-                $request->start_date,
-                fn($q, $start) =>
-                $q->whereDate('created_at', '>=', $start)
+                $startDate,
+                fn($q) =>
+                $q->whereDate('created_at', '>=', $startDate)
             )
             ->when(
-                $request->end_date,
-                fn($q, $end) =>
-                $q->whereDate('created_at', '<=', $end)
+                $endDate,
+                fn($q) =>
+                $q->whereDate('created_at', '<=', $endDate)
             )
             ->get();
 
@@ -398,6 +447,53 @@ class AdminCustomerController extends Controller
             $loginBranchesId = Session::get('user')->branches_id;
             $branches = Branch::where('id', $loginBranchesId)->get();
         }
+
+        $startDate = null;
+        $endDate = null;
+
+        switch ($request->date_filter) {
+            case 'today':
+                $startDate = Carbon::today();
+                $endDate = Carbon::today();
+                break;
+
+            case 'yesterday':
+                $startDate = Carbon::yesterday();
+                $endDate = Carbon::yesterday();
+                break;
+
+            case 'week':
+                $startDate = Carbon::now()->startOfWeek();
+                $endDate = Carbon::now()->endOfWeek();
+                break;
+
+            case 'last_week':
+                $startDate = Carbon::now()->subWeek()->startOfWeek();
+                $endDate = Carbon::now()->subWeek()->endOfWeek();
+                break;
+
+            case 'month':
+                $startDate = Carbon::now()->startOfMonth();
+                $endDate = Carbon::now()->endOfMonth();
+                break;
+
+            case 'last_month':
+                $startDate = Carbon::now()->subMonth()->startOfMonth();
+                $endDate = Carbon::now()->subMonth()->endOfMonth();
+                break;
+
+            case 'custom':
+                $startDate = $request->start_date;
+                $endDate = $request->end_date;
+                break;
+
+            case 'all':
+            default:
+                $startDate = null;
+                $endDate = null;
+                break;
+        }
+
         $clientIDs = Customer::query()
             ->when(
                 $request->filled('branches_id') && $request->branches_id !== 'ALL',
@@ -410,14 +506,14 @@ class AdminCustomerController extends Controller
                 $q->where('users_id', $request->users_id)
             )
             ->when(
-                $request->start_date,
-                fn($q, $start) =>
-                $q->whereDate('created_at', '>=', $start)
+                $startDate,
+                fn($q) =>
+                $q->whereDate('created_at', '>=', $startDate)
             )
             ->when(
-                $request->end_date,
-                fn($q, $end) =>
-                $q->whereDate('created_at', '<=', $end)
+                $endDate,
+                fn($q) =>
+                $q->whereDate('created_at', '<=', $endDate)
             )
             ->pluck('id');
 
@@ -452,6 +548,53 @@ class AdminCustomerController extends Controller
             $loginBranchesId = Session::get('user')->branches_id;
             $branches = Branch::where('id', $loginBranchesId)->get();
         }
+
+        $startDate = null;
+        $endDate = null;
+
+        switch ($request->date_filter) {
+            case 'today':
+                $startDate = Carbon::today();
+                $endDate = Carbon::today();
+                break;
+
+            case 'yesterday':
+                $startDate = Carbon::yesterday();
+                $endDate = Carbon::yesterday();
+                break;
+
+            case 'week':
+                $startDate = Carbon::now()->startOfWeek();
+                $endDate = Carbon::now()->endOfWeek();
+                break;
+
+            case 'last_week':
+                $startDate = Carbon::now()->subWeek()->startOfWeek();
+                $endDate = Carbon::now()->subWeek()->endOfWeek();
+                break;
+
+            case 'month':
+                $startDate = Carbon::now()->startOfMonth();
+                $endDate = Carbon::now()->endOfMonth();
+                break;
+
+            case 'last_month':
+                $startDate = Carbon::now()->subMonth()->startOfMonth();
+                $endDate = Carbon::now()->subMonth()->endOfMonth();
+                break;
+
+            case 'custom':
+                $startDate = $request->start_date;
+                $endDate = $request->end_date;
+                break;
+
+            case 'all':
+            default:
+                $startDate = null;
+                $endDate = null;
+                break;
+        }
+
         $data = Customer::query()
             ->when(
                 $request->filled('branches_id') && $request->branches_id !== 'ALL',
@@ -464,14 +607,14 @@ class AdminCustomerController extends Controller
                 $q->where('users_id', $request->users_id)
             )
             ->when(
-                $request->start_date,
-                fn($q, $start) =>
-                $q->whereDate('created_at', '>=', $start)
+                $startDate,
+                fn($q) =>
+                $q->whereDate('created_at', '>=', $startDate)
             )
             ->when(
-                $request->end_date,
-                fn($q, $end) =>
-                $q->whereDate('created_at', '<=', $end)
+                $endDate,
+                fn($q) =>
+                $q->whereDate('created_at', '<=', $endDate)
             )
             ->get();
 
@@ -491,6 +634,8 @@ class AdminCustomerController extends Controller
         }
 
         Customer::whereIn('id', $ids)->delete();
+        Document::whereIn('customers_id ', $ids)->delete();
+        Payment::whereIn('customers_id ', $ids)->delete();
 
         return response()->json(['success' => true, 'message' => 'Selected ids deleted successfully.']);
     }
@@ -538,5 +683,11 @@ class AdminCustomerController extends Controller
             return response()->json(['success' => true]);
         }
         return response()->json(['success' => false, 'message' => 'Invalid OTP']);
+    }
+
+    public function showCustomerDetail($id)
+    {
+        $customer = Customer::findOrFail($id);
+        return view('partials.customer_detail', compact('customer'));
     }
 }

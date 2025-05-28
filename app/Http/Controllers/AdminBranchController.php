@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Validator;
 use App\Models\Branch;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -117,6 +118,7 @@ class AdminBranchController extends Controller
     {
         $branch = Branch::findOrFail($id);
         User::where('branches_id', $id)->delete();
+        Customer::where('branches_id', $id)->delete();
         $branch->delete();
 
         return Redirect::back()->with('success', "Delete Record Successfully");
