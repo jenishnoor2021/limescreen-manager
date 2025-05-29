@@ -182,7 +182,7 @@
                             <td>{{ $customer->package_amount }}</td>
                             <td>{{ $customer->advanced }}</td>
                             <td>{{ $customer->balance }}</td>
-                            <td>{{ $customer->is_verified }}</td>
+                            <td>{{ $customer->is_verified ? '✅' : '❌' }}</td>
                             <td>{{ $customer->verified_at }}</td>
                             <td><a href="{{ URL::to('show/' . $customer->link) }}" target="_blank">Link</a>
                             </td>

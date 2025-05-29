@@ -39,12 +39,14 @@ class AdminCustomerController extends Controller
         // Role-based data scope
         if (Auth::user()->role === 'Admin') {
             // No restriction
-        } elseif (Auth::user()->role === 'Manager') {
+        } elseif (Auth::user()->role === 'BreanchHead') {
+            $loginBranchesId = Auth::user()->branches_id;
+            $userIds = User::where('branches_id', $loginBranchesId)->where('role', 'Manager')->where('role', '!=', 'BreanchHead')->pluck('id');
+            $query->where('branches_id', $loginBranchesId)->whereIn('users_id', $userIds);
+        } else {
             $loginBranchesId = Auth::user()->branches_id;
             $userIds = User::where('branches_id', $loginBranchesId)->pluck('id');
             $query->where('branches_id', $loginBranchesId)->whereIn('users_id', $userIds);
-        } else {
-            $query->where('users_id', Auth::user()->id);
         }
 
         // Date filtering
@@ -105,19 +107,38 @@ class AdminCustomerController extends Controller
      */
     public function create()
     {
-        $branches = Branch::orderBy('id', 'DESC')->get();
-        $users = User::orderBy('id', 'DESC')->get();
+        // $branches = Branch::orderBy('id', 'DESC')->get();
+        $loginRole = Session::get('user')->role;
+        if ($loginRole == 'Admin') {
+            $branches = Branch::orderBy('id', 'DESC')->get();
+            $users = User::orderBy('id', 'DESC')->get();
+        } else {
+            $loginBranchesId = Session::get('user')->branches_id;
+            $branches = Branch::where('id', $loginBranchesId)->get();
+            $users = User::where('branches_id', $loginBranchesId)
+                ->where('role', 'Manager')->get();
+        }
+
         $packages = Package::orderBy('id', 'DESC')->get();
         return view('admin.customers.create', compact('branches', 'users', 'packages'));
     }
 
     public function getUsersByBranch($branch_id)
     {
-        $loginRole = Session::get('user')->role;
+        $loginUser = Auth::user();
+        $loginRole = $loginUser->role;
+        $loginId = $loginUser->id;
+
         if ($loginRole == 'Admin') {
-            $users = User::where('branches_id', $branch_id)->get();
+            $users = User::where('branches_id', $branch_id)
+                ->where('role', 'Manager')
+                ->get();
+        } elseif ($loginRole == 'BreanchHead') {
+            $users = User::where('branches_id', $branch_id)
+                ->where('role', 'Manager')
+                ->get();
         } else {
-            $users = User::where('branches_id', $branch_id)->where('role', 'Manager')->get();
+            $users = User::where('id', $loginId)->get();
         }
         return response()->json($users);
     }
@@ -220,8 +241,18 @@ class AdminCustomerController extends Controller
     public function edit($id)
     {
         $customer = Customer::findOrFail($id);
-        $branches = Branch::orderBy('id', 'DESC')->get();
-        $users = User::orderBy('id', 'DESC')->get();
+
+        $loginRole = Session::get('user')->role;
+        if ($loginRole == 'Admin') {
+            $branches = Branch::orderBy('id', 'DESC')->get();
+            $users = User::orderBy('id', 'DESC')->get();
+        } else {
+            $loginBranchesId = Session::get('user')->branches_id;
+            $branches = Branch::where('id', $loginBranchesId)->get();
+            $users = User::where('branches_id', $loginBranchesId)
+                ->where('role', 'Manager')->get();
+        }
+
         $customerDocs = Document::where('customers_id', $id)->get();
         $packages = Package::orderBy('id', 'DESC')->get();
         return view('admin.customers.edit', compact('customer', 'branches', 'users', 'customerDocs', 'packages'));
@@ -314,8 +345,8 @@ class AdminCustomerController extends Controller
     public function destroy($id)
     {
         $customer = Customer::findOrFail($id);
-        Document::where('customers_id ', $id)->delete();
-        Payment::where('customers_id ', $id)->delete();
+        Document::where('customers_id', $id)->delete();
+        Payment::where('customers_id', $id)->delete();
         $customer->delete();
 
         return Redirect::back()->with('success', "Delete Record Successfully");
@@ -419,7 +450,7 @@ class AdminCustomerController extends Controller
             ->get();
 
         if ($request->has('download')) {
-            $fileName = time() . '_client.xlsx';  // Change file extension to .xlsx
+            $fileName = time() . '_client.xlsx';
             return Excel::download(new CustomersExport($data), $fileName, \Maatwebsite\Excel\Excel::XLSX);
         }
         return view('admin.customers.report', compact('branches', 'data'));
@@ -634,8 +665,8 @@ class AdminCustomerController extends Controller
         }
 
         Customer::whereIn('id', $ids)->delete();
-        Document::whereIn('customers_id ', $ids)->delete();
-        Payment::whereIn('customers_id ', $ids)->delete();
+        Document::whereIn('customers_id', $ids)->delete();
+        Payment::whereIn('customers_id', $ids)->delete();
 
         return response()->json(['success' => true, 'message' => 'Selected ids deleted successfully.']);
     }

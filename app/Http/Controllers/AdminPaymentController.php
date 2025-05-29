@@ -11,7 +11,7 @@ class AdminPaymentController extends Controller
 {
     public function getByCustomer($customerId)
     {
-        $payments = Payment::where('customers_id', $customerId)->get();
+        $payments = Payment::where('customers_id', $customerId)->orderBy('id', 'asc')->get();
         $customer = Customer::findOrFail($customerId);
         return response()->json([
             'payments' => $payments,

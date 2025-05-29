@@ -45,7 +45,7 @@ class AdminController extends Controller
 
     public function dashboard(Request $request)
     {
-        $loginUser = Session::get('user');
+        $loginUser = Auth::user();
         $loginRole = $loginUser->role;
 
         $branchesQuery = Branch::query();
@@ -57,13 +57,26 @@ class AdminController extends Controller
 
         if ($loginRole === 'Admin') {
             // No filters needed
+        } elseif ($loginRole === 'BreanchHead') {
+            $branchId = $loginUser->branches_id;
+
+            // Get managers under the branch
+            $userIds = User::where('branches_id', $branchId)
+                ->where('role', 'Manager')
+                ->pluck('id');
+
+            $customerQuery->whereIn('users_id', $userIds)
+                ->where('branches_id', $branchId);
+
+            $branchesQuery->where('id', $branchId);
         } elseif ($loginRole === 'Manager') {
-            $loginBranchId = $loginUser->branches_id;
-            $loginUserId = $loginUser->users_id;
-            $userIds = User::where('branches_id', $loginBranchId)->where('users_id', $loginUserId)->pluck('id');
-            $customerQuery->whereIn('users_id', $userIds);
-            $customerQuery->where('branches_id', $loginBranchId);
-            $branchesQuery->where('id', $loginBranchId);
+            $branchId = $loginUser->branches_id;
+            $userId = $loginUser->id;
+
+            $customerQuery->where('users_id', $userId)
+                ->where('branches_id', $branchId);
+
+            $branchesQuery->where('id', $branchId);
         } else {
             $customerQuery->where('users_id', $loginUser->id);
         }
@@ -88,6 +101,11 @@ class AdminController extends Controller
         $todayPayment = (clone $customerQuery)
             ->where('balance', '!=', 0)
             ->whereDate('due_date', now())
+            ->get();
+
+        $tommorowPayment = (clone $customerQuery)
+            ->where('balance', '!=', 0)
+            ->whereDate('due_date', Carbon::tomorrow())
             ->get();
 
         $branches = $branchesQuery->get();
@@ -130,7 +148,8 @@ class AdminController extends Controller
             'totalCollection',
             'todayCollection',
             'recivedCollection',
-            'pendingCollection'
+            'pendingCollection',
+            'tommorowPayment'
         ));
     }
 
@@ -175,20 +194,28 @@ class AdminController extends Controller
     public function index(Request $request)
     {
         $branches = Branch::orderBy('id', 'DESC')->get();
-        $loginRole = Session::get('user')->role;
-        $loginBranchId = Session::get('user')->branches_id;
+        $loginUser = Session::get('user');
+        $loginRole = $loginUser->role;
+        $loginID = $loginUser->id;
+        $loginBranchId = $loginUser->branches_id;
 
         $usersQuery = User::query();
 
-        if ($loginRole != 'Admin') {
-            $usersQuery->where('branches_id', $loginBranchId)
-                ->where('role', '!=', 'Manager');
-        } else {
-            $usersQuery->where('role', '!=', 'Admin');
+        if ($loginRole == 'Admin') {
+            $usersQuery->where('role', '!=', 'Admin')->orderBy('role', 'asc');
 
             if ($request->filled('branch')) {
                 $usersQuery->where('branches_id', $request->branch);
             }
+
+            if ($request->filled('selectType') && $request->selectType !== 'ALL') {
+                $usersQuery->where('role', $request->selectType);
+            }
+        } elseif ($loginRole == 'BreanchHead') {
+            $usersQuery->where('branches_id', $loginBranchId)
+                ->where('role', 'Manager');
+        } else {
+            $usersQuery->where('id', $loginID);
         }
 
         $users = $usersQuery->get();
@@ -205,10 +232,12 @@ class AdminController extends Controller
     {
         $loginRole = Session::get('user')->role;
         $loginBrancgId = Session::get('user')->branches_id;
-        if ($loginRole != 'Admin') {
+        if ($loginRole == 'Admin') {
+            $branches = Branch::orderBy('id', 'DESC')->get();
+        } elseif ($loginRole == 'BreanchHead') {
             $branches = Branch::where('id', $loginBrancgId)->get();
         } else {
-            $branches = Branch::orderBy('id', 'DESC')->get();
+            $branches = Branch::where('id', $loginBrancgId)->get();
         }
         return view('admin.users.create', compact('branches'));
     }

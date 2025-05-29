@@ -17,7 +17,7 @@ class CreateUsersTable extends Migration
             $table->id();
             $table->unsignedBigInteger('branches_id')->unsigned()->index();
             $table->string('name');
-            $table->enum('role', ['Admin', 'User', 'Manager'])->default('User');
+            $table->enum('role', ['Admin', 'User', 'Manager', 'BreanchHead'])->default('Manager');
             $table->string('email')->unique();
             $table->string('username');
             $table->string('mobile')->nullable();

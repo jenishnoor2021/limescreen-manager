@@ -30,6 +30,9 @@
                         <div class="mb-3">
                             <label for="role">Role<span class="text-danger">*</span></label>
                             <select name="role" id="role" class="form-select" required>
+                                @if (Session::get('user')['role'] == 'Admin')
+                                <option value="BreanchHead" {{ $user->role == 'BreanchHead' ? 'selected' : '' }}>Breanch Head</option>
+                                @endif
                                 <option value="Manager" {{ $user->role == 'Manager' ? 'selected' : '' }}>Manager</option>
                             </select>
                             @if ($errors->has('role'))

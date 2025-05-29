@@ -42,7 +42,7 @@
                     <div class="card-body">
                         <div class="d-flex">
                             <div class="flex-grow-1">
-                                <p class="text-muted fw-medium">Managers</p>
+                                <p class="text-muted fw-medium">Users</p>
                                 <h4 class="mb-0">{{ $users }}</h4>
                             </div>
 
@@ -259,66 +259,65 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Action</th>
-                                <!-- <th>Link</th> -->
-                                <!-- <th>Branch</th> -->
-                                <!-- <th>User</th> -->
+                                <th>Link</th>
+                                <th>Branch</th>
+                                <th>User</th>
                                 <th>Kid Name</th>
-                                <!-- <th>Father Name</th> -->
-                                <!-- <th>Mother Name</th> -->
-                                <!-- <th>Email</th> -->
+                                <th>Father Name</th>
+                                <th>Mother Name</th>
+                                <th>Email</th>
                                 <th>Mobile</th>
-                                <!-- <th>Whatsapp No</th> -->
-                                <th>Verified</th>
+                                <th>Whatsapp No</th>
                                 <th>Package</th>
                                 <th>Package Amount</th>
                                 <th>Advanced</th>
                                 <th>Balance</th>
-                                <!-- <th>Verified At</th> -->
-                                <!-- <th>Address</th> -->
-                                <!-- <th>Remark</th> -->
+                                <th>Verified</th>
+                                <th>Verified At</th>
+                                <th>Address</th>
+                                <th>Remark</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($todayPayment as $customer)
                             <tr>
                                 <td>
-                                    <i class="fa fa-eye text-primary" style="cursor: pointer; font-size:15px;"
-                                        data-id="{{ $customer->id }}"
-                                        onclick="showCustomerModal(this)">
-                                    </i>
+                                    <a href="{{ route('admin.customers.edit', $customer->id) }}"
+                                        class="btn btn-outline-primary waves-effect waves-light"><i
+                                            class="fa fa-edit"></i></a>
                                     <a href="#" onclick="openPaymentModal({{ $customer->id }})"
                                         class="btn btn-outline-info waves-effect waves-light">
                                         <!-- <i class="fa fa-list"></i> -->Pay
                                     </a>
                                 </td>
-                                <!-- <td align="center">
+                                <td align="center">
                                     <a href="{{ URL::to('show/' . $customer->link) }}" target="_blank"><u>Link</u></a>
                                     <br>
                                     <button class="btn btn-sm btn-outline-secondary ms-2 copy-btn"
                                         data-link="{{ URL::to('show/' . $customer->link) }}">
                                         Copy
                                     </button>
-                                </td> -->
-                                <!-- <td>{{ $customer->branches ? $customer->branches->name : '' }}</td> -->
-                                <!-- <td>{{ $customer->users ? $customer->users->name : '' }}</td> -->
+                                </td>
+                                <td>{{ $customer->branches ? $customer->branches->name : '' }}</td>
+                                <td>{{ $customer->branches ? $customer->branches->name : '' }}</td>
                                 <td>{{ $customer->kid_name }}</td>
-                                <!-- <td>{{ $customer->father_name }}</td> -->
-                                <!-- <td>{{ $customer->mother_name }}</td> -->
-                                <!-- <td>{{ $customer->email }}</td> -->
+                                <td>{{ $customer->father_name }}</td>
+                                <td>{{ $customer->mother_name }}</td>
+                                <td>{{ $customer->email }}</td>
                                 <td>{{ $customer->mobile }}</td>
-                                <!-- <td>{{ $customer->whatsapp_number }}</td> -->
-                                <td>{{ $customer->is_verified ? '✅' : '❌' }}</td>
+                                <td>{{ $customer->whatsapp_number }}</td>
                                 <td>{{ $customer->package }}</td>
                                 <td>{{ $customer->package_amount }}</td>
                                 <td>{{ $customer->advanced }}</td>
                                 <td>{{ $customer->balance }}</td>
-                                <!-- <td>{{ $customer->verified_at }}</td> -->
-                                <!-- <td>
+                                <td>{{ $customer->is_verified }}</td>
+                                <td>{{ $customer->verified_at }}</td>
+                                <td>
                                     <p class="add-read-more show-less-content">{{ $customer->address }}</p>
-                                </td> -->
-                                <!-- <td>
+                                </td>
+                                <td>
                                     <p class="add-read-more show-less-content">{{ $customer->remark }}</p>
-                                </td> -->
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -341,69 +340,68 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Action</th>
-                                <!-- <th>Link</th> -->
-                                <th>Kid Name</th>
-                                <th>Mobile</th>
-                                <th>Verified</th>
+                                <th>Link</th>
                                 <th>Package</th>
                                 <th>Package Amount</th>
                                 <th>Advanced</th>
                                 <th>Balance</th>
-                                <!-- <th>Due Date</th> -->
-                                <!-- <th>Branch</th> -->
-                                <!-- <th>User</th> -->
-                                <!-- <th>Father Name</th> -->
-                                <!-- <th>Mother Name</th> -->
-                                <!-- <th>Email</th> -->
-                                <!-- <th>Whatsapp No</th> -->
-                                <!-- <th>Verified At</th> -->
-                                <!-- <th>Address</th> -->
-                                <!-- <th>Remark</th> -->
+                                <th>Due Date</th>
+                                <th>Branch</th>
+                                <th>User</th>
+                                <th>Kid Name</th>
+                                <th>Father Name</th>
+                                <th>Mother Name</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Whatsapp No</th>
+                                <th>Verified</th>
+                                <th>Verified At</th>
+                                <th>Address</th>
+                                <th>Remark</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($oldPendingPayment as $customer)
                             <tr>
                                 <td>
-                                    <i class="fa fa-eye text-primary" style="cursor: pointer; font-size:15px;"
-                                        data-id="{{ $customer->id }}"
-                                        onclick="showCustomerModal(this)">
-                                    </i>
+                                    <a href="{{ route('admin.customers.edit', $customer->id) }}"
+                                        class="btn btn-outline-primary waves-effect waves-light"><i
+                                            class="fa fa-edit"></i></a>
                                     <a href="#" onclick="openPaymentModal({{ $customer->id }})"
                                         class="btn btn-outline-info waves-effect waves-light">
                                         <!-- <i class="fa fa-list"></i> -->Pay
                                     </a>
                                 </td>
-                                <!-- <td align="center">
+                                <td align="center">
                                     <a href="{{ URL::to('show/' . $customer->link) }}" target="_blank"><u>Link</u></a>
                                     <br>
                                     <button class="btn btn-sm btn-outline-secondary ms-2 copy-btn"
                                         data-link="{{ URL::to('show/' . $customer->link) }}">
                                         Copy
                                     </button>
-                                </td> -->
-                                <td>{{ $customer->kid_name }}</td>
-                                <td>{{ $customer->mobile }}</td>
-                                <td>{{ $customer->is_verified ? '✅' : '❌' }}</td>
+                                </td>
                                 <td>{{ $customer->package }}</td>
                                 <td>{{ $customer->package_amount }}</td>
                                 <td>{{ $customer->advanced }}</td>
                                 <td>{{ $customer->balance }}</td>
-                                <!-- <td>{{ !empty($customer->due_date) ? \Carbon\Carbon::parse($customer->due_date)->format('d-m-Y') : '-' }}</td> -->
-                                <!-- <td>{{ $customer->branches ? $customer->branches->name : '' }}</td> -->
-                                <!-- <td>{{ $customer->users ? $customer->users->name : '' }}</td> -->
-                                <!-- <td>{{ $customer->father_name }}</td> -->
-                                <!-- <td>{{ $customer->mother_name }}</td> -->
-                                <!-- <td>{{ $customer->email }}</td> -->
-                                <!-- <td>{{ $customer->whatsapp_number }}</td> -->
-                                <!-- <td>{{ $customer->verified_at }}</td> -->
+                                <td>{{ !empty($customer->due_date) ? \Carbon\Carbon::parse($customer->due_date)->format('d-m-Y') : '-' }}</td>
+                                <td>{{ $customer->branches ? $customer->branches->name : '' }}</td>
+                                <td>{{ $customer->users ? $customer->users->name : '' }}</td>
+                                <td>{{ $customer->kid_name }}</td>
+                                <td>{{ $customer->father_name }}</td>
+                                <td>{{ $customer->mother_name }}</td>
+                                <td>{{ $customer->email }}</td>
+                                <td>{{ $customer->mobile }}</td>
+                                <td>{{ $customer->whatsapp_number }}</td>
+                                <td>{{ $customer->is_verified }}</td>
+                                <td>{{ $customer->verified_at }}</td>
 
-                                <!-- <td>
+                                <td>
                                     <p class="add-read-more show-less-content">{{ $customer->address }}</p>
-                                </td> -->
-                                <!-- <td>
+                                </td>
+                                <td>
                                     <p class="add-read-more show-less-content">{{ $customer->remark }}</p>
-                                </td> -->
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -426,69 +424,68 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Action</th>
-                                <!-- <th>Link</th> -->
-                                <th>Kid Name</th>
-                                <th>Mobile</th>
-                                <th>Verified</th>
+                                <th>Link</th>
                                 <th>Package</th>
                                 <th>Package Amount</th>
                                 <th>Advanced</th>
                                 <th>Balance</th>
-                                <!-- <th>Due Date</th> -->
-                                <!-- <th>Branch</th> -->
-                                <!-- <th>User</th> -->
-                                <!-- <th>Father Name</th> -->
-                                <!-- <th>Mother Name</th> -->
-                                <!-- <th>Email</th> -->
-                                <!-- <th>Whatsapp No</th> -->
-                                <!-- <th>Verified At</th> -->
-                                <!-- <th>Address</th> -->
-                                <!-- <th>Remark</th> -->
+                                <th>Due Date</th>
+                                <th>Branch</th>
+                                <th>User</th>
+                                <th>Kid Name</th>
+                                <th>Father Name</th>
+                                <th>Mother Name</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Whatsapp No</th>
+                                <th>Verified</th>
+                                <th>Verified At</th>
+                                <th>Address</th>
+                                <th>Remark</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($tommorowPayment as $customer)
                             <tr>
                                 <td>
-                                    <i class="fa fa-eye text-primary" style="cursor: pointer; font-size:15px;"
-                                        data-id="{{ $customer->id }}"
-                                        onclick="showCustomerModal(this)">
-                                    </i>
+                                    <a href="{{ route('admin.customers.edit', $customer->id) }}"
+                                        class="btn btn-outline-primary waves-effect waves-light"><i
+                                            class="fa fa-edit"></i></a>
                                     <a href="#" onclick="openPaymentModal({{ $customer->id }})"
                                         class="btn btn-outline-info waves-effect waves-light">
                                         <!-- <i class="fa fa-list"></i> -->Pay
                                     </a>
                                 </td>
-                                <!-- <td align="center">
+                                <td align="center">
                                     <a href="{{ URL::to('show/' . $customer->link) }}" target="_blank"><u>Link</u></a>
                                     <br>
                                     <button class="btn btn-sm btn-outline-secondary ms-2 copy-btn"
                                         data-link="{{ URL::to('show/' . $customer->link) }}">
                                         Copy
                                     </button>
-                                </td> -->
-                                <td>{{ $customer->kid_name }}</td>
-                                <td>{{ $customer->mobile }}</td>
-                                <td>{{ $customer->is_verified ? '✅' : '❌' }}</td>
+                                </td>
                                 <td>{{ $customer->package }}</td>
                                 <td>{{ $customer->package_amount }}</td>
                                 <td>{{ $customer->advanced }}</td>
                                 <td>{{ $customer->balance }}</td>
-                                <!-- <td>{{ !empty($customer->due_date) ? \Carbon\Carbon::parse($customer->due_date)->format('d-m-Y') : '-' }}</td> -->
-                                <!-- <td>{{ $customer->branches ? $customer->branches->name : '' }}</td> -->
-                                <!-- <td>{{ $customer->users ? $customer->users->name : '' }}</td> -->
-                                <!-- <td>{{ $customer->father_name }}</td> -->
-                                <!-- <td>{{ $customer->mother_name }}</td> -->
-                                <!-- <td>{{ $customer->email }}</td> -->
-                                <!-- <td>{{ $customer->whatsapp_number }}</td> -->
-                                <!-- <td>{{ $customer->verified_at }}</td> -->
+                                <td>{{ !empty($customer->due_date) ? \Carbon\Carbon::parse($customer->due_date)->format('d-m-Y') : '-' }}</td>
+                                <td>{{ $customer->branches ? $customer->branches->name : '' }}</td>
+                                <td>{{ $customer->users ? $customer->users->name : '' }}</td>
+                                <td>{{ $customer->kid_name }}</td>
+                                <td>{{ $customer->father_name }}</td>
+                                <td>{{ $customer->mother_name }}</td>
+                                <td>{{ $customer->email }}</td>
+                                <td>{{ $customer->mobile }}</td>
+                                <td>{{ $customer->whatsapp_number }}</td>
+                                <td>{{ $customer->is_verified }}</td>
+                                <td>{{ $customer->verified_at }}</td>
 
-                                <!-- <td>
+                                <td>
                                     <p class="add-read-more show-less-content">{{ $customer->address }}</p>
-                                </td> -->
-                                <!-- <td>
+                                </td>
+                                <td>
                                     <p class="add-read-more show-less-content">{{ $customer->remark }}</p>
-                                </td> -->
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -500,45 +497,10 @@
     </div>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="infoModalLabel">Customer Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="modalBodyContent">
-                <!-- Content will be loaded here -->
-            </div>
-        </div>
-    </div>
-</div>
-
 @endsection
 
 @section('script')
 <script>
-    function showCustomerModal(el) {
-        const customerId = $(el).data('id');
-
-        // Optional: show loader
-        $('#modalBodyContent').html('<p class="text-center">Loading...</p>');
-
-        // Fetch data via AJAX
-        $.ajax({
-            url: `/admin/customer-detail/${customerId}`, // Adjust route
-            type: 'GET',
-            success: function(response) {
-                $('#modalBodyContent').html(response);
-                $('#infoModal').modal('show');
-            },
-            error: function() {
-                $('#modalBodyContent').html('<p class="text-danger">Failed to load data.</p>');
-            }
-        });
-    }
-
     $(document).ready(function() {
         function loadUsers(branchId, selectedUserId = '') {
             if (branchId) {

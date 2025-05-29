@@ -36,10 +36,10 @@
                         <div class="mb-3">
                             <label for="role">Role<span class="text-danger">*</span></label>
                             <select name="role" id="role" class="form-select" required>
-                                <!-- <option value="User">User</option> -->
                                 @if (Session::get('user')['role'] == 'Admin')
-                                <option value="Manager">Manager</option>
+                                <option value="BreanchHead">Breanch Head</option>
                                 @endif
+                                <option value="Manager">Manager</option>
                             </select>
                             @if ($errors->has('role'))
                             <div class="error text-danger">{{ $errors->first('role') }}</div>

@@ -31,7 +31,7 @@
                 ]) !!}
                 @csrf
 
-                @if (Session::get('user')['role'] != 'Admin')
+                @if (Session::get('user')['role'] == 'Manager')
                 <input type="hidden" name="users_id" value="{{ Session::get('user')['id'] }}">
                 <input type="hidden" name="branches_id" value="{{ Session::get('user')['branches_id'] }}">
                 @else

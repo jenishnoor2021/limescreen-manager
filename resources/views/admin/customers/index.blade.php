@@ -151,7 +151,7 @@
                             <td>{{ $customer->package_amount }}</td>
                             <td>{{ $customer->advanced }}</td>
                             <td>{{ $customer->balance }}</td>
-                            <td>{{ $customer->is_verified }}</td>
+                            <td>{{ $customer->is_verified ? '✅' : '❌' }}</td>
                             <td>{{ $customer->verified_at }}</td>
                             <td>
                                 <p class="add-read-more show-less-content">{{ $customer->address }}</p>

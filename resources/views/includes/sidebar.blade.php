@@ -26,6 +26,8 @@
                     <span key="t-chat">Package</span>
                 </a>
             </li>
+            @endif
+            @if(Session::get('user')['role'] != 'Manager')
             <li>
                 <a href="/admin/users" class="waves-effect">
                     <i class="bx bx-home-circle"></i>
