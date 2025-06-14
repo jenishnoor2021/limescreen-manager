@@ -47,6 +47,8 @@ class AdminController extends Controller
     {
         $loginUser = Auth::user();
         $loginRole = $loginUser->role;
+        $branchId = $loginUser->branches_id ?? null;
+        $userId = $loginUser->id ?? null;
 
         $branchesQuery = Branch::query();
         $branchesCount = Branch::count();
@@ -58,7 +60,6 @@ class AdminController extends Controller
         if ($loginRole === 'Admin') {
             // No filters needed
         } elseif ($loginRole === 'BreanchHead') {
-            $branchId = $loginUser->branches_id;
 
             // Get managers under the branch
             $userIds = User::where('branches_id', $branchId)
@@ -70,15 +71,13 @@ class AdminController extends Controller
 
             $branchesQuery->where('id', $branchId);
         } elseif ($loginRole === 'Manager') {
-            $branchId = $loginUser->branches_id;
-            $userId = $loginUser->id;
 
             $customerQuery->where('users_id', $userId)
                 ->where('branches_id', $branchId);
 
             $branchesQuery->where('id', $branchId);
         } else {
-            $customerQuery->where('users_id', $loginUser->id);
+            $customerQuery->where('users_id', $userId);
         }
 
         if ($request->filled('branches_id') && $request->branches_id !== 'ALL') {
@@ -90,8 +89,8 @@ class AdminController extends Controller
         }
 
         // Fetch values
-        $customers = (clone $customerQuery)->count();
-        $todayleads = (clone $customerQuery)->whereDate('created_at', Carbon::today())->count();
+        $totalClients = (clone $customerQuery)->count();
+        $todayClients = (clone $customerQuery)->whereDate('created_at', Carbon::today())->count();
 
         $oldPendingPayment = (clone $customerQuery)
             ->where('balance', '!=', 0)
@@ -111,28 +110,60 @@ class AdminController extends Controller
         $branches = $branchesQuery->get();
         $today = Carbon::today()->toDateString();
 
-        $totalCollection = DB::table('payments')
-            ->join('customers', 'payments.customers_id', '=', 'customers.id')
+        $totalCollectionQuery = DB::table('payments')
+            ->join('customers', 'payments.customers_id', '=', 'customers.id');
+
+        if ($loginRole === 'BreanchHead') {
+            $totalCollectionQuery->where('customers.branches_id', $branchId);
+        } elseif ($loginRole === 'Manager') {
+            $totalCollectionQuery->where('customers.users_id', $userId);
+        }
+
+        $totalCollection = $totalCollectionQuery
             ->select('customers.branches_id', DB::raw('SUM(payments.amount) as total_amount'))
             ->groupBy('customers.branches_id')
             ->pluck('total_amount', 'customers.branches_id');
 
-        // Today's collection per branch
-        $todayCollection = DB::table('payments')
+        // Today's collection
+        $todayCollectionQuery = DB::table('payments')
             ->join('customers', 'payments.customers_id', '=', 'customers.id')
-            ->whereDate('payments.date', $today)
+            ->whereDate('payments.date', $today);
+
+        if ($loginRole === 'BreanchHead') {
+            $todayCollectionQuery->where('customers.branches_id', $branchId);
+        } elseif ($loginRole === 'Manager') {
+            $todayCollectionQuery->where('customers.users_id', $userId);
+        }
+
+        $todayCollection = $todayCollectionQuery
             ->select('customers.branches_id', DB::raw('SUM(payments.amount) as today_amount'))
             ->groupBy('customers.branches_id')
             ->pluck('today_amount', 'customers.branches_id');
 
-        $recivedCollection = DB::table('payments')
-            ->join('customers', 'payments.customers_id', '=', 'customers.id')
+        // Received collection
+        $recivedCollectionQuery = DB::table('customers');
+
+        if ($loginRole === 'BreanchHead') {
+            $recivedCollectionQuery->where('customers.branches_id', $branchId);
+        } elseif ($loginRole === 'Manager') {
+            $recivedCollectionQuery->where('customers.users_id', $userId);
+        }
+
+        $recivedCollection = $recivedCollectionQuery
             ->select('customers.branches_id', DB::raw('SUM(customers.package_amount) as recived_amount'))
             ->groupBy('customers.branches_id')
             ->pluck('recived_amount', 'customers.branches_id');
 
-        $pendingCollection = DB::table('payments')
-            ->join('customers', 'payments.customers_id', '=', 'customers.id')
+        // Pending collection
+        $pendingCollectionQuery = DB::table('customers');
+
+        if ($loginRole === 'BreanchHead') {
+            $pendingCollectionQuery->where('customers.branches_id', $branchId);
+        } elseif ($loginRole === 'Manager') {
+            $pendingCollectionQuery->where('customers.users_id', $userId);
+        }
+
+        $pendingCollection = $pendingCollectionQuery
             ->select('customers.branches_id', DB::raw('SUM(customers.balance) as pending_amount'))
             ->groupBy('customers.branches_id')
             ->pluck('pending_amount', 'customers.branches_id');
@@ -140,8 +171,8 @@ class AdminController extends Controller
         return view('admin.index', compact(
             'branchesCount',
             'users',
-            'customers',
-            'todayleads',
+            'totalClients',
+            'todayClients',
             'oldPendingPayment',
             'todayPayment',
             'branches',

@@ -64,8 +64,8 @@
                     <div class="card-body">
                         <div class="d-flex">
                             <div class="flex-grow-1">
-                                <p class="text-muted fw-medium">Today</p>
-                                <h4 class="mb-0">{{ $todayleads }}</h4>
+                                <p class="text-muted fw-medium">Today Client</p>
+                                <h4 class="mb-0">{{ $todayClients }}</h4>
                             </div>
 
                             <div class="flex-shrink-0 align-self-center ">
@@ -85,8 +85,8 @@
                     <div class="card-body">
                         <div class="d-flex">
                             <div class="flex-grow-1">
-                                <p class="text-muted fw-medium">Total</p>
-                                <h4 class="mb-0">{{ $customers }}</h4>
+                                <p class="text-muted fw-medium">Total Client</p>
+                                <h4 class="mb-0">{{ $totalClients }}</h4>
                             </div>
 
                             <div class="flex-shrink-0 align-self-center ">
@@ -172,7 +172,11 @@
                     <table id="datatable" class="table table-bordered dt-responsive nowrap w-100 mt-3">
                         <thead class="table-light">
                             <tr>
+                                @if (Session::get('user')['role'] != 'Manager')
                                 <th class="align-middle">Branch Name</th>
+                                @else
+                                <th class="align-middle">Name</th>
+                                @endif
                                 <th class="align-middle">Today Collection</th>
                                 <th class="align-middle">Total Collection</th>
                                 <th class="align-middle">Package Amount</th>
@@ -182,7 +186,11 @@
                         <tbody>
                             @foreach ($branches as $branch)
                             <tr>
+                                @if (Session::get('user')['role'] != 'Manager')
                                 <td>{{ $branch->name }}</td>
+                                @else
+                                <td>{{ Session::get('user')['name'] }}</td>
+                                @endif
                                 <td>{{ $todayCollection[$branch->id] ?? 0; }}</td>
                                 <td>{{ $totalCollection[$branch->id] ?? 0; }}</td>
                                 <td>{{ $recivedCollection[$branch->id] ?? 0; }}</td>
@@ -197,6 +205,7 @@
     </div>
 </div>
 
+@if (Session::get('user')['role'] != 'Manager')
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
@@ -247,6 +256,7 @@
         </div>
     </div>
 </div>
+@endif
 
 <div class="row">
     <div class="col-lg-12">
@@ -313,91 +323,6 @@
                                 <td>{{ $customer->advanced }}</td>
                                 <td>{{ $customer->balance }}</td>
                                 <!-- <td>{{ $customer->verified_at }}</td> -->
-                                <!-- <td>
-                                    <p class="add-read-more show-less-content">{{ $customer->address }}</p>
-                                </td> -->
-                                <!-- <td>
-                                    <p class="add-read-more show-less-content">{{ $customer->remark }}</p>
-                                </td> -->
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title mb-4">Old Payment</h4>
-                @if(count($oldPendingPayment)>0)
-                <div class="table-responsive">
-                    <table id="" class="table table-bordered dt-responsive nowrap w-100 mt-3">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Action</th>
-                                <!-- <th>Link</th> -->
-                                <th>Kid Name</th>
-                                <th>Mobile</th>
-                                <th>Verified</th>
-                                <th>Package</th>
-                                <th>Package Amount</th>
-                                <th>Advanced</th>
-                                <th>Balance</th>
-                                <!-- <th>Due Date</th> -->
-                                <!-- <th>Branch</th> -->
-                                <!-- <th>User</th> -->
-                                <!-- <th>Father Name</th> -->
-                                <!-- <th>Mother Name</th> -->
-                                <!-- <th>Email</th> -->
-                                <!-- <th>Whatsapp No</th> -->
-                                <!-- <th>Verified At</th> -->
-                                <!-- <th>Address</th> -->
-                                <!-- <th>Remark</th> -->
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($oldPendingPayment as $customer)
-                            <tr>
-                                <td>
-                                    <i class="fa fa-eye text-primary" style="cursor: pointer; font-size:15px;"
-                                        data-id="{{ $customer->id }}"
-                                        onclick="showCustomerModal(this)">
-                                    </i>
-                                    <a href="#" onclick="openPaymentModal({{ $customer->id }})"
-                                        class="btn btn-outline-info waves-effect waves-light">
-                                        <!-- <i class="fa fa-list"></i> -->Pay
-                                    </a>
-                                </td>
-                                <!-- <td align="center">
-                                    <a href="{{ URL::to('show/' . $customer->link) }}" target="_blank"><u>Link</u></a>
-                                    <br>
-                                    <button class="btn btn-sm btn-outline-secondary ms-2 copy-btn"
-                                        data-link="{{ URL::to('show/' . $customer->link) }}">
-                                        Copy
-                                    </button>
-                                </td> -->
-                                <td>{{ $customer->kid_name }}</td>
-                                <td>{{ $customer->mobile }}</td>
-                                <td>{{ $customer->is_verified ? '✅' : '❌' }}</td>
-                                <td>{{ $customer->package }}</td>
-                                <td>{{ $customer->package_amount }}</td>
-                                <td>{{ $customer->advanced }}</td>
-                                <td>{{ $customer->balance }}</td>
-                                <!-- <td>{{ !empty($customer->due_date) ? \Carbon\Carbon::parse($customer->due_date)->format('d-m-Y') : '-' }}</td> -->
-                                <!-- <td>{{ $customer->branches ? $customer->branches->name : '' }}</td> -->
-                                <!-- <td>{{ $customer->users ? $customer->users->name : '' }}</td> -->
-                                <!-- <td>{{ $customer->father_name }}</td> -->
-                                <!-- <td>{{ $customer->mother_name }}</td> -->
-                                <!-- <td>{{ $customer->email }}</td> -->
-                                <!-- <td>{{ $customer->whatsapp_number }}</td> -->
-                                <!-- <td>{{ $customer->verified_at }}</td> -->
-
                                 <!-- <td>
                                     <p class="add-read-more show-less-content">{{ $customer->address }}</p>
                                 </td> -->
@@ -500,6 +425,91 @@
     </div>
 </div>
 
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Old Payment</h4>
+                @if(count($oldPendingPayment)>0)
+                <div class="table-responsive">
+                    <table id="" class="table table-bordered dt-responsive nowrap w-100 mt-3">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Action</th>
+                                <!-- <th>Link</th> -->
+                                <th>Kid Name</th>
+                                <th>Mobile</th>
+                                <th>Verified</th>
+                                <th>Package</th>
+                                <th>Package Amount</th>
+                                <th>Advanced</th>
+                                <th>Balance</th>
+                                <!-- <th>Due Date</th> -->
+                                <!-- <th>Branch</th> -->
+                                <!-- <th>User</th> -->
+                                <!-- <th>Father Name</th> -->
+                                <!-- <th>Mother Name</th> -->
+                                <!-- <th>Email</th> -->
+                                <!-- <th>Whatsapp No</th> -->
+                                <!-- <th>Verified At</th> -->
+                                <!-- <th>Address</th> -->
+                                <!-- <th>Remark</th> -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($oldPendingPayment as $customer)
+                            <tr>
+                                <td>
+                                    <i class="fa fa-eye text-primary" style="cursor: pointer; font-size:15px;"
+                                        data-id="{{ $customer->id }}"
+                                        onclick="showCustomerModal(this)">
+                                    </i>
+                                    <a href="#" onclick="openPaymentModal({{ $customer->id }})"
+                                        class="btn btn-outline-info waves-effect waves-light">
+                                        <!-- <i class="fa fa-list"></i> -->Pay
+                                    </a>
+                                </td>
+                                <!-- <td align="center">
+                                    <a href="{{ URL::to('show/' . $customer->link) }}" target="_blank"><u>Link</u></a>
+                                    <br>
+                                    <button class="btn btn-sm btn-outline-secondary ms-2 copy-btn"
+                                        data-link="{{ URL::to('show/' . $customer->link) }}">
+                                        Copy
+                                    </button>
+                                </td> -->
+                                <td>{{ $customer->kid_name }}</td>
+                                <td>{{ $customer->mobile }}</td>
+                                <td>{{ $customer->is_verified ? '✅' : '❌' }}</td>
+                                <td>{{ $customer->package }}</td>
+                                <td>{{ $customer->package_amount }}</td>
+                                <td>{{ $customer->advanced }}</td>
+                                <td>{{ $customer->balance }}</td>
+                                <!-- <td>{{ !empty($customer->due_date) ? \Carbon\Carbon::parse($customer->due_date)->format('d-m-Y') : '-' }}</td> -->
+                                <!-- <td>{{ $customer->branches ? $customer->branches->name : '' }}</td> -->
+                                <!-- <td>{{ $customer->users ? $customer->users->name : '' }}</td> -->
+                                <!-- <td>{{ $customer->father_name }}</td> -->
+                                <!-- <td>{{ $customer->mother_name }}</td> -->
+                                <!-- <td>{{ $customer->email }}</td> -->
+                                <!-- <td>{{ $customer->whatsapp_number }}</td> -->
+                                <!-- <td>{{ $customer->verified_at }}</td> -->
+
+                                <!-- <td>
+                                    <p class="add-read-more show-less-content">{{ $customer->address }}</p>
+                                </td> -->
+                                <!-- <td>
+                                    <p class="add-read-more show-less-content">{{ $customer->remark }}</p>
+                                </td> -->
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal -->
 <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -548,7 +558,10 @@
                     dataType: 'json',
                     success: function(data) {
                         $('#users_id').empty();
-                        $('#users_id').append('<option value="ALL">ALL</option>');
+
+                        if (loginRole !== 'Manager') {
+                            $('#users_id').append('<option value="ALL">ALL</option>');
+                        }
 
                         $.each(data, function(key, user) {
                             let selected = user.id == selectedUserId ? 'selected' : '';

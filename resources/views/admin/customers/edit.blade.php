@@ -372,7 +372,11 @@
                     dataType: 'json',
                     success: function(data) {
                         $('#users_id').empty();
-                        $('#users_id').append('<option value="">Select User</option>');
+
+                        if (loginRole !== 'Manager') {
+                            $('#users_id').append('<option value="ALL">ALL</option>');
+                        }
+
                         $.each(data, function(key, user) {
                             $('#users_id').append('<option value="' + user.id +
                                 '">' + user.name + '</option>');

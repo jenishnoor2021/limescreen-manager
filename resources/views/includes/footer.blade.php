@@ -83,6 +83,8 @@
 @yield('script')
 
 <script>
+    const loginRole = "{{ Session::get('user')['role'] }}";
+
     function openPaymentModal(customerId) {
         $('#customer_id').val(customerId);
         $('#payment_id').val('');
@@ -111,6 +113,13 @@
             });
             const balance = parseFloat(response.balance) || 0;
             $('#currentBalance').text(balance.toFixed(2));
+
+            if (balance == 0) {
+                $('#amount').prop('disabled', true); // Disable amount input
+            } else {
+                $('#amount').prop('disabled', false); // Enable amount input
+            }
+
             $('#paymentsTable tbody').html(rows);
         });
     }
@@ -122,6 +131,11 @@
         const enteredAmount = parseFloat($('#amount').val()) || 0;
         const editPaymentId = $('#payment_id').val();
         let maxAllowed = currentBalance;
+
+        if (currentBalance == 0 && !editPaymentId) {
+            alert('Balance is zero, cannot add new payment.');
+            return;
+        }
 
         if (editPaymentId) {
             // If editing, find the original payment value and add it to current balance
@@ -162,6 +176,7 @@
             $('#payment_id').val(payment.id);
             $('#date').val(payment.date);
             $('#amount').val(payment.amount);
+            $('#amount').prop('disabled', false);
         });
     }
 

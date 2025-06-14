@@ -45,8 +45,9 @@ class AdminCustomerController extends Controller
             $query->where('branches_id', $loginBranchesId)->whereIn('users_id', $userIds);
         } else {
             $loginBranchesId = Auth::user()->branches_id;
-            $userIds = User::where('branches_id', $loginBranchesId)->pluck('id');
-            $query->where('branches_id', $loginBranchesId)->whereIn('users_id', $userIds);
+            $loginId = Auth::user()->id;
+            // $userIds = User::where('branches_id', $loginBranchesId)->pluck('id');
+            $query->where('branches_id', $loginBranchesId)->where('users_id', $loginId);
         }
 
         // Date filtering
@@ -654,6 +655,105 @@ class AdminCustomerController extends Controller
             return Excel::download(new ClientPaymentExport($data), $fileName, \Maatwebsite\Excel\Excel::XLSX);
         }
         return view('admin.customers.client_payment_report', compact('branches', 'data'));
+    }
+
+    public function pendingPaymentList()
+    {
+        $loginRole = Session::get('user')->role;
+        if ($loginRole == 'Admin') {
+            $branches = Branch::orderBy('id', 'DESC')->get();
+        } else {
+            $loginBranchesId = Session::get('user')->branches_id;
+            $branches = Branch::where('id', $loginBranchesId)->get();
+        }
+        $data = [];
+        return view('admin.customers.pending_payment_list', compact('branches', 'data'));
+    }
+
+    public function clientPendingPaymentList(Request $request)
+    {
+        $loginRole = Session::get('user')->role;
+        if ($loginRole == 'Admin') {
+            $branches = Branch::orderBy('id', 'DESC')->get();
+        } else {
+            $loginBranchesId = Session::get('user')->branches_id;
+            $branches = Branch::where('id', $loginBranchesId)->get();
+        }
+
+        $startDate = null;
+        $endDate = null;
+
+        switch ($request->date_filter) {
+            case 'today':
+                $startDate = Carbon::today();
+                $endDate = Carbon::today();
+                break;
+
+            case 'yesterday':
+                $startDate = Carbon::yesterday();
+                $endDate = Carbon::yesterday();
+                break;
+
+            case 'week':
+                $startDate = Carbon::now()->startOfWeek();
+                $endDate = Carbon::now()->endOfWeek();
+                break;
+
+            case 'last_week':
+                $startDate = Carbon::now()->subWeek()->startOfWeek();
+                $endDate = Carbon::now()->subWeek()->endOfWeek();
+                break;
+
+            case 'month':
+                $startDate = Carbon::now()->startOfMonth();
+                $endDate = Carbon::now()->endOfMonth();
+                break;
+
+            case 'last_month':
+                $startDate = Carbon::now()->subMonth()->startOfMonth();
+                $endDate = Carbon::now()->subMonth()->endOfMonth();
+                break;
+
+            case 'custom':
+                $startDate = $request->start_date;
+                $endDate = $request->end_date;
+                break;
+
+            case 'all':
+            default:
+                $startDate = null;
+                $endDate = null;
+                break;
+        }
+
+        $data = Customer::query()
+            ->when(
+                $request->filled('branches_id') && $request->branches_id !== 'ALL',
+                fn($q) =>
+                $q->where('branches_id', $request->branches_id)
+            )
+            ->when(
+                $request->filled('users_id') && $request->users_id !== 'ALL',
+                fn($q) =>
+                $q->where('users_id', $request->users_id)
+            )
+            ->when(
+                $startDate,
+                fn($q) =>
+                $q->whereDate('due_date', '>=', $startDate)
+            )
+            ->when(
+                $endDate,
+                fn($q) =>
+                $q->whereDate('due_date', '<=', $endDate)
+            )
+            ->where('balance', '!=', 0)->get();
+
+        if ($request->has('download')) {
+            $fileName = time() . '_clientPendingPayment.xlsx';  // Change file extension to .xlsx
+            return Excel::download(new ClientPaymentExport($data), $fileName, \Maatwebsite\Excel\Excel::XLSX);
+        }
+        return view('admin.customers.pending_payment_list', compact('branches', 'data'));
     }
 
     public function bulkDelete(Request $request)

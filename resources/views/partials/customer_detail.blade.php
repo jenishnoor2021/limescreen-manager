@@ -56,6 +56,18 @@
           <td class="th_second">{{ $customer->balance }}</td>
         </tr>
         <tr>
+          <th>Payment Status:</th>
+          <td class="th_second">
+            <b>
+              @if ($customer->balance == 0)
+              <span class="text-success">Done</span>
+              @else
+              <span class="text-danger">Pending</span>
+              @endif
+            </b>
+          </td>
+        </tr>
+        <tr>
           <th>Due Date:</th>
           <td class="th_second">{{ $customer->due_date }}</td>
         </tr>

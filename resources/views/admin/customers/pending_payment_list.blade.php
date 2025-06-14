@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-            <h4 class="mb-sm-0 font-size-18">Client Payment Report</h4>
+            <h4 class="mb-sm-0 font-size-18">Pending Payment List</h4>
         </div>
     </div>
 </div>
@@ -29,7 +29,7 @@
                 </div>
                 @endif
 
-                <form id="filterForm" action="{{ route('admin.client-payment.export.show') }}" name="exportShow" method="GET"
+                <form id="filterForm" action="{{ route('admin.pending-payment.list.show') }}" name="exportShow" method="GET"
                     enctype="multipart/form-data">
                     @csrf
                     <div data-repeater-list="group-a">
@@ -109,7 +109,7 @@
                                 <div class="d-flex gap-2">
                                     <input type="submit" class="btn btn-success mt-3 mt-lg-0" value="Show" />
                                     <a class="btn btn-light mt-3 mt-lg-0"
-                                        href="{{ URL::to('/admin/client-payment-report') }}">Clear</a>
+                                        href="{{ URL::to('/admin/pending-payment-list') }}">Clear</a>
                                 </div>
                             </div>
                         </div>
@@ -131,10 +131,11 @@
                             <th></th>
                             <th><strong>Kid's Name</strong></th>
                             <th><strong>Mobile</strong></th>
-                            <th><strong>Import Date</strong></th>
-                            <th><strong>Package</strong></th>
-                            <th><strong>Advace</strong></th>
-                            <th><strong>Balcnce</strong></th>
+                            <th><strong>Due Date</strong></th>
+                            <!-- <th><strong>Import Date</strong></th> -->
+                            <!-- <th><strong>Package</strong></th> -->
+                            <!-- <th><strong>Advace</strong></th> -->
+                            <th><strong>Balance</strong></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -148,9 +149,10 @@
                             </td>
                             <td>{{ $customer->kid_name }}</td>
                             <td>{{ $customer->mobile }}</td>
-                            <td>{{ !empty($customer->created_at) ? \Carbon\Carbon::parse($customer->created_at)->format('d-m-Y') : '-' }}</td>
-                            <td>{{ $customer->package_amount }}</td>
-                            <td>{{ $customer->advanced }}</td>
+                            <td>{{ !empty($customer->due_date) ? \Carbon\Carbon::parse($customer->due_date)->format('d-m-Y') : '-' }}</td>
+                            <!-- <td>{{ !empty($customer->created_at) ? \Carbon\Carbon::parse($customer->created_at)->format('d-m-Y') : '-' }}</td> -->
+                            <!-- <td>{{ $customer->package_amount }}</td>
+                            <td>{{ $customer->advanced }}</td> -->
                             <td>{{ $customer->balance }}</td>
                         </tr>
                         @endforeach

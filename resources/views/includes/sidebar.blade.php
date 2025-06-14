@@ -63,6 +63,12 @@
                     <span key="t-chat">Client Payment Report</span>
                 </a>
             </li>
+            <li>
+                <a href="/admin/pending-payment-list" class="waves-effect">
+                    <i class="bx bx-home-circle"></i>
+                    <span key="t-chat">Pending Payment List</span>
+                </a>
+            </li>
 
         </ul>
     </div>

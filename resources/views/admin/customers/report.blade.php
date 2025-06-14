@@ -138,7 +138,9 @@
         @if (count($data) > 0)
         <div class="card">
             <div class="card-body">
+                @if (Session::get('user')['role'] == 'Admin')
                 <button type="button" class="btn btn-success mb-3" id="exportBtn">Export Excel</button>
+                @endif
                 <table id="datatable" class="table table-bordered dt-responsive nowrap w-100 mt-3">
                     <thead>
                         <tr>
@@ -264,7 +266,10 @@
                     dataType: 'json',
                     success: function(data) {
                         $('#users_id').empty();
-                        $('#users_id').append('<option value="ALL">ALL</option>');
+
+                        if (loginRole !== 'Manager') {
+                            $('#users_id').append('<option value="ALL">ALL</option>');
+                        }
 
                         $.each(data, function(key, user) {
                             let selected = user.id == selectedUserId ? 'selected' : '';

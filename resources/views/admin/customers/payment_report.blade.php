@@ -122,7 +122,9 @@
         @if (count($data) > 0)
         <div class="card">
             <div class="card-body">
+                @if (Session::get('user')['role'] == 'Admin')
                 <button type="button" class="btn btn-success mb-3" id="exportBtn">Export Excel</button>
+                @endif
                 <table id="datatable" class="table table-bordered dt-responsive nowrap w-100 mt-3">
                     <thead>
                         <tr>
@@ -225,27 +227,27 @@
         }
     }
 
-    $(document).ready(function() {
-        function showCustomerModal(el) {
-            const customerId = $(el).data('id');
+    // $(document).ready(function() {
+    function showCustomerModal(el) {
+        const customerId = $(el).data('id');
 
-            // Optional: show loader
-            $('#modalBodyContent').html('<p class="text-center">Loading...</p>');
+        // Optional: show loader
+        $('#modalBodyContent').html('<p class="text-center">Loading...</p>');
 
-            // Fetch data via AJAX
-            $.ajax({
-                url: `/admin/customer-detail/${customerId}`, // Adjust route
-                type: 'GET',
-                success: function(response) {
-                    $('#modalBodyContent').html(response);
-                    $('#infoModal').modal('show');
-                },
-                error: function() {
-                    $('#modalBodyContent').html('<p class="text-danger">Failed to load data.</p>');
-                }
-            });
-        }
-    });
+        // Fetch data via AJAX
+        $.ajax({
+            url: `/admin/customer-detail/${customerId}`, // Adjust route
+            type: 'GET',
+            success: function(response) {
+                $('#modalBodyContent').html(response);
+                $('#infoModal').modal('show');
+            },
+            error: function() {
+                $('#modalBodyContent').html('<p class="text-danger">Failed to load data.</p>');
+            }
+        });
+    }
+    // });
 </script>
 <script>
     $(document).ready(function() {
@@ -257,7 +259,10 @@
                     dataType: 'json',
                     success: function(data) {
                         $('#users_id').empty();
-                        $('#users_id').append('<option value="ALL">ALL</option>');
+
+                        if (loginRole !== 'Manager') {
+                            $('#users_id').append('<option value="ALL">ALL</option>');
+                        }
 
                         $.each(data, function(key, user) {
                             let selected = user.id == selectedUserId ? 'selected' : '';
