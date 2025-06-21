@@ -95,8 +95,19 @@ class AdminCustomerController extends Controller
                 break;
         }
 
+        // 🔍 Search logic
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('kid_name', 'LIKE', "%$search%")
+                    ->orWhere('father_name', 'LIKE', "%$search%")
+                    ->orWhere('mobile', 'LIKE', "%$search%")
+                    ->orWhere('whatsapp_number', 'LIKE', "%$search%");
+            });
+        }
+
         // Final data fetch
-        $customers = $query->orderBy('id', 'DESC')->get();
+        $customers = $query->orderBy('id', 'DESC')->paginate(500)->appends($request->all());
 
         return view('admin.customers.index', compact('customers'));
     }

@@ -1,4 +1,13 @@
 @extends('layouts.admin')
+@section('style')
+<style>
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+    }
+</style>
+@endsection
 @section('content')
 <!-- start page title -->
 <div class="row">
@@ -77,6 +86,15 @@
                                         Filter
                                     </button>
 
+                                    <!-- 🔍 New search input -->
+                                    <input type="text" name="search" value="{{ request('search') }}" class="form-control w-auto"
+                                        placeholder="Search by name, mobile, WhatsApp" />
+
+                                    <!-- Submit button for custom date range -->
+                                    <button type="submit" class="btn btn-secondary">
+                                        Search
+                                    </button>
+
                                 </form>
 
                             </div>
@@ -85,101 +103,109 @@
                     </div>
                 </div>
 
-                <table id="datatable" class="table table-bordered dt-responsive nowrap w-100 mt-3">
-                    <thead>
-                        <tr>
-                            <th>Action</th>
-                            @if (Session::get('user')['role'] == 'Admin')
-                            <th><input type="checkbox" id="select_all"></th>
-                            @endif
-                            <th>Link</th>
-                            @if (Session::get('user')['role'] == 'Admin')
-                            <th>Branch</th>
-                            <th>User</th>
-                            @endif
-                            <th>Kid Name</th>
-                            <th>Father Name</th>
-                            <th>Mobile</th>
-                            <th>Whatsapp No</th>
-                            <th>Due Date</th>
-                            <th>Payment Status</th>
-                            <th>Package</th>
-                            <th>Package Amount</th>
-                            <th>Advanced</th>
-                            <th>Balance</th>
-                            <th>Verified</th>
-                            <th>Verified At</th>
-                            <th>Mother Name</th>
-                            <th>Email</th>
-                            <th>Address</th>
-                            <th>Remark</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach ($customers as $customer)
-                        <tr>
-                            <td>
-                                <a href="{{ route('admin.customers.edit', $customer->id) }}"
-                                    class="btn btn-outline-primary waves-effect waves-light"><i
-                                        class="fa fa-edit"></i></a>
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table id="datatable1" class="table table-bordered dt-responsive nowrap w-100 mt-3">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
                                 @if (Session::get('user')['role'] == 'Admin')
-                                <a href="{{ route('admin.customers.destroy', $customer->id) }}"
-                                    onclick="return confirm('Sure ! You want to delete ?');"
-                                    class="btn btn-outline-danger waves-effect waves-light"><i
-                                        class="fa fa-trash"></i></a>
+                                <th><input type="checkbox" id="select_all"></th>
                                 @endif
-                                <a href="#" onclick="openPaymentModal({{ $customer->id }})"
-                                    class="btn btn-outline-info waves-effect waves-light">
-                                    <!-- <i class="fa fa-list"></i> -->Pay
-                                </a>
-                            </td>
-                            @if (Session::get('user')['role'] == 'Admin')
-                            <td><input type="checkbox" class="row_checkbox" value="{{ $customer->id }}"></td>
-                            @endif
-                            <td align="center">
-                                <a href="{{ URL::to('show/' . $customer->link) }}" target="_blank"><u>Link</u></a>
-                                <br>
-                                <button class="btn btn-sm btn-outline-secondary ms-2 copy-btn"
-                                    data-link="{{ URL::to('show/' . $customer->link) }}">
-                                    Copy
-                                </button>
-                            </td>
-                            @if (Session::get('user')['role'] == 'Admin')
-                            <td>{{ $customer->branches ? $customer->branches->name : '' }}</td>
-                            <td>{{ $customer->users ? $customer->users->name : '' }}</td>
-                            @endif
-                            <td>{{ $customer->kid_name }}</td>
-                            <td>{{ $customer->father_name }}</td>
-                            <td>{{ $customer->mobile }}</td>
-                            <td>{{ $customer->whatsapp_number }}</td>
-                            <td>{{ !empty($customer->due_date) ? \Carbon\Carbon::parse($customer->due_date)->format('d-m-Y') : '-' }}</td>
-                            <td><b>
-                                    @if ($customer->balance == 0)
-                                    <span class="text-success">Done</span>
-                                    @else
-                                    <span class="text-danger">Pending</span>
+                                <th>Link</th>
+                                @if (Session::get('user')['role'] == 'Admin')
+                                <th>Branch</th>
+                                <th>User</th>
+                                @endif
+                                <th>Kid Name</th>
+                                <th>Father Name</th>
+                                <th>Mobile</th>
+                                <th>Whatsapp No</th>
+                                <th>Due Date</th>
+                                <th>Payment Status</th>
+                                <th>Package</th>
+                                <th>Package Amount</th>
+                                <th>Advanced</th>
+                                <th>Balance</th>
+                                <th>Verified</th>
+                                <th>Verified At</th>
+                                <th>Mother Name</th>
+                                <th>Email</th>
+                                <th>Address</th>
+                                <th>Remark</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach ($customers as $customer)
+                            <tr>
+                                <td>
+                                    <a href="{{ route('admin.customers.edit', $customer->id) }}"
+                                        class="btn btn-outline-primary waves-effect waves-light"><i
+                                            class="fa fa-edit"></i></a>
+                                    @if (Session::get('user')['role'] == 'Admin')
+                                    <a href="{{ route('admin.customers.destroy', $customer->id) }}"
+                                        onclick="return confirm('Sure ! You want to delete ?');"
+                                        class="btn btn-outline-danger waves-effect waves-light"><i
+                                            class="fa fa-trash"></i></a>
                                     @endif
-                                </b>
-                            </td>
-                            <td>{{ $customer->package }}</td>
-                            <td>{{ $customer->package_amount }}</td>
-                            <td>{{ $customer->advanced }}</td>
-                            <td>{{ $customer->balance }}</td>
-                            <td>{{ $customer->is_verified ? '✅' : '❌' }}</td>
-                            <td>{{ $customer->verified_at }}</td>
-                            <td>{{ $customer->mother_name }}</td>
-                            <td>{{ $customer->email }}</td>
-                            <td>
-                                <p class="add-read-more show-less-content">{{ $customer->address }}</p>
-                            </td>
-                            <td>
-                                <p class="add-read-more show-less-content">{{ $customer->remark }}</p>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                    <a href="#" onclick="openPaymentModal({{ $customer->id }})"
+                                        class="btn btn-outline-info waves-effect waves-light">
+                                        <!-- <i class="fa fa-list"></i> -->Pay
+                                    </a>
+                                </td>
+                                @if (Session::get('user')['role'] == 'Admin')
+                                <td><input type="checkbox" class="row_checkbox" value="{{ $customer->id }}"></td>
+                                @endif
+                                <td align="center">
+                                    <a href="{{ URL::to('show/' . $customer->link) }}" target="_blank"><u>Link</u></a>
+                                    <br>
+                                    <button class="btn btn-sm btn-outline-secondary ms-2 copy-btn"
+                                        data-link="{{ URL::to('show/' . $customer->link) }}">
+                                        Copy
+                                    </button>
+                                </td>
+                                @if (Session::get('user')['role'] == 'Admin')
+                                <td>{{ $customer->branches ? $customer->branches->name : '' }}</td>
+                                <td>{{ $customer->users ? $customer->users->name : '' }}</td>
+                                @endif
+                                <td>{{ $customer->kid_name }}</td>
+                                <td>{{ $customer->father_name }}</td>
+                                <td>{{ $customer->mobile }}</td>
+                                <td>{{ $customer->whatsapp_number }}</td>
+                                <td>{{ !empty($customer->due_date) ? \Carbon\Carbon::parse($customer->due_date)->format('d-m-Y') : '-' }}</td>
+                                <td><b>
+                                        @if ($customer->balance == 0)
+                                        <span class="text-success">Done</span>
+                                        @else
+                                        <span class="text-danger">Pending</span>
+                                        @endif
+                                    </b>
+                                </td>
+                                <td>{{ $customer->package }}</td>
+                                <td>{{ $customer->package_amount }}</td>
+                                <td>{{ $customer->advanced }}</td>
+                                <td>{{ $customer->balance }}</td>
+                                <td>{{ $customer->is_verified ? '✅' : '❌' }}</td>
+                                <td>{{ $customer->verified_at }}</td>
+                                <td>{{ $customer->mother_name }}</td>
+                                <td>{{ $customer->email }}</td>
+                                <td>
+                                    <p class="add-read-more show-less-content">{{ $customer->address }}</p>
+                                </td>
+                                <td>
+                                    <p class="add-read-more show-less-content">{{ $customer->remark }}</p>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-sm-12" style="display:flex;justify-content:center;">
+                        {{$customers->links('pagination::bootstrap-4')}}
+                    </div>
+                </div>
 
             </div>
         </div>
